@@ -2,7 +2,7 @@
 // ABOUTME: Uses real stage colors so "one stage off" means what a player would see.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { scoreDish, menuVerdict } from '../src/score.js';
+import { scoreDish, menuVerdict, stirVerdict } from '../src/score.js';
 import { STAGES } from '../src/roux.js';
 
 const at = (name) => STAGES.find((s) => s.name === name).at;
@@ -78,4 +78,10 @@ test('menu verdicts get kinder as the three-dish total rises', () => {
   const lines = [0, 80, 160, 230, 280].map(menuVerdict);
   assert.equal(new Set(lines).size, lines.length, 'each band should have its own line');
   assert.equal(menuVerdict(300), menuVerdict(280));
+});
+
+test('stir verdicts get kinder the steadier the stirring', () => {
+  const lines = [30, 65, 85, 98].map(stirVerdict);
+  assert.equal(new Set(lines).size, lines.length, 'each band should have its own line');
+  assert.equal(stirVerdict(100), stirVerdict(98));
 });

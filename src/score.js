@@ -90,3 +90,14 @@ const MENU_VERDICTS = [
 export function menuVerdict(total) {
   return MENU_VERDICTS.find((v) => total >= v.min).text;
 }
+
+const STIR_VERDICTS = [
+  { min: 95, text: 'Never let it sit.' },
+  { min: 80, text: 'Mostly steady.' },
+  { min: 60, text: 'Stop and go.' },
+  { min: 0, text: 'Left it alone too long.' },
+];
+
+export function stirVerdict(stirScore) {
+  return STIR_VERDICTS.find((v) => stirScore >= v.min).text;
+}

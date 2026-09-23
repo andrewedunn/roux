@@ -1,9 +1,9 @@
 // ABOUTME: Game flow and wiring: title → three dishes (ready → cooking → cooling → result) → menu summary.
 // ABOUTME: Owns the frame loop, stirring input, captions, result sheets, and sharing.
-import { createCook, stepCook, dropTrinity, canDrop, STIR_TO_UNLOCK } from './cook.js';
+import { createCook, stepCook, dropTrinity, canDrop, stirScore, STIR_TO_UNLOCK } from './cook.js';
 import { createStir, stirMove, stirRelease, stirTick } from './stir.js';
 import { createMenu } from './menu.js';
-import { scoreDish, menuVerdict } from './score.js';
+import { scoreDish, menuVerdict, stirVerdict } from './score.js';
 import { STAGES, rouxColor, smellAt } from './roux.js';
 import { shareText, menuFromLink } from './share.js';
 import { createStore } from './store.js';
@@ -158,12 +158,17 @@ function finishDish() {
   round.phase = 'settled';
   if (round.cook.status === 'burnt') vibrate([30, 60, 30]);
   const result = scoreDish(round.dish.target, round.cook);
-  game.results.push({ dish: round.dish, result });
+  const stir = stirScore(round.cook);
+  game.results.push({ dish: round.dish, result, stir });
   setAction(result.burnt ? 'Burnt' : 'Done', 'wait');
-  setTimeout(() => showResult(result), round.cook.status === 'burnt' ? RESULT_DELAY * 2 : RESULT_DELAY);
+  setTimeout(() => showResult(result, stir), round.cook.status === 'burnt' ? RESULT_DELAY * 2 : RESULT_DELAY);
 }
 
-function showResult(r) {
+// The stir score sits under the roux score: how steadily you kept it moving.
+const stirLine = (stir, label = 'Stirring') =>
+  `<p class="stir-line">${label} <strong>${stir}</strong>/100 · ${stirVerdict(stir)}</p>`;
+
+function showResult(r, stir) {
   round.phase = 'result';
   const last = game.index === game.menu.length - 1;
   els.sheet.innerHTML = `
@@ -174,10 +179,11 @@ function showResult(r) {
     <p class="score" aria-hidden="true"><span class="num">${reduceMotion ? r.score : 0}</span><span class="of">/100</span></p>
     <p class="verdict">${r.verdict}</p>
     <p class="tip">${r.tip}</p>
-    ${r.speckPenalty ? `<p class="penalty">−${r.speckPenalty} for scorched bits</p>` : ''}
+    ${stirLine(stir)}
+    ${r.speckPenalty ? `<p class="penalty">−${r.speckPenalty} for scorched flecks</p>` : ''}
     <p class="source">${sourceLink(round.dish.source)}</p>
     <button type="button" class="action" id="next">${last ? 'See your menu' : 'Next dish'}</button>`;
-  openSheet(`${r.score} out of 100. ${r.verdict} ${r.tip}`);
+  openSheet(`${r.score} out of 100. ${r.verdict} ${r.tip} Stirring ${stir} out of 100.`);
   countUp(els.sheet.querySelector('.num'), r.score);
   sound.result(r.score, r.burnt);
   const next = $('next');
@@ -197,7 +203,7 @@ function showResult(r) {
 }
 
 function finishMenu() {
-  const dishes = game.results.map(({ dish, result }) => ({
+  const dishes = game.results.map(({ dish, result, stir }) => ({
     dish: dish.dish,
     stage: dish.stage.name,
     source: dish.source,
@@ -205,12 +211,13 @@ function finishMenu() {
     finalHex: result.finalHex,
     score: result.score,
     burnt: result.burnt,
+    stir,
   }));
   store.markPlayed();
   showSummary(game.seed, dishes);
 }
 
-// dishes: [{ dish, stage, targetHex, finalHex, score, burnt }]
+// dishes: [{ dish, stage, source, targetHex, finalHex, score, burnt, stir }]
 function showSummary(seed, dishes) {
   const total = totalOf(dishes);
   const rows = dishes
@@ -224,16 +231,18 @@ function showSummary(seed, dishes) {
     )
     .join('');
   const verdict = menuVerdict(total);
+  const stir = Math.round(dishes.reduce((sum, d) => sum + d.stir, 0) / dishes.length);
   els.sheet.innerHTML = `
     <h2 class="menu-title">Your menu</h2>
     <ol class="menu-rows">${rows}</ol>
     <p class="score" aria-hidden="true"><span class="num">${reduceMotion ? total : 0}</span><span class="of">/${dishes.length * 100}</span></p>
     <p class="verdict">${verdict}</p>
+    ${stirLine(stir, 'Stirring, on average,')}
     <div class="sheet-actions">
       <button type="button" class="action" id="share">Share</button>
       <button type="button" class="secondary" id="again">Cook another menu</button>
     </div>`;
-  openSheet(`${total} out of ${dishes.length * 100}. ${verdict}`);
+  openSheet(`${total} out of ${dishes.length * 100}. ${verdict} Stirring ${stir} out of 100.`);
   countUp(els.sheet.querySelector('.num'), total);
   const shareButton = $('share');
   shareButton.addEventListener('click', () => shareMenu(seed, dishes, shareButton));
@@ -314,10 +323,10 @@ function updateCaption() {
   if (phase === 'ready') {
     text = hasStirred ? 'Light it when you’re ready.' : 'Try stirring in circles.';
   } else if (phase === 'cooking') {
-    if (cook.stick > 0.55) {
+    if (cook.stick > 0.3) {
       text = 'It’s catching. Stir!';
       tone = 'alarm';
-    } else if (cook.stick > 0.3) {
+    } else if (cook.stick > 0.08) {
       text = 'Starting to stick. Stir.';
       tone = 'warn';
     } else if (!round.unlocked) {

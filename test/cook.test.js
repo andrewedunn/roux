@@ -2,7 +2,7 @@
 // ABOUTME: Each test drives the real sim with scripted stir input and checks the behavior a player feels.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createCook, stepCook, dropTrinity, canDrop, SCORCH_SPECKS, STIR_TO_UNLOCK } from '../src/cook.js';
+import { createCook, stepCook, dropTrinity, canDrop, stirScore, SCORCH_SPECKS, STIR_TO_UNLOCK } from '../src/cook.js';
 
 const FPS = 60;
 const STIRRING = { stir: 1 };
@@ -38,16 +38,32 @@ test('steady stirring keeps the bottom from catching', () => {
   assert.equal(state.specks, 0);
 });
 
-test('short stir breaks are forgiven', () => {
-  const stirThreeOfFive = (t) => ({ stir: t % 5 < 3 ? 1 : 0 });
-  const { state } = run(createCook(), stirThreeOfFive, (s) => s.browning >= 0.67);
+// Stirring patterns: a quick lift of the finger vs. real stop-and-go.
+const briefLifts = (t) => ({ stir: t % 3 < 2.5 ? 1 : 0 });
+const stopAndGo = (t) => ({ stir: t % 5 < 3 ? 1 : 0 });
+
+test('lifting the finger for a moment to reposition is forgiven', () => {
+  const { state } = run(createCook(), briefLifts, (s) => s.browning >= 0.67);
   assert.equal(state.specks, 0);
 });
 
-test('not stirring lays down specks within ten seconds', () => {
-  const warm = run(createCook(), STIRRING, (s) => s.browning >= 0.3).state;
-  const { state } = run(warm, IDLE, (_, t) => t >= 10);
-  assert.ok(state.specks > 0, 'expected specks');
+test('stop-and-go stirring leaves flecks but doesn’t scorch', () => {
+  const { state } = run(createCook(), stopAndGo, (s) => s.browning >= 0.67);
+  assert.ok(state.specks >= 1, `only ${state.specks.toFixed(2)} specks`);
+  assert.equal(state.status, 'cooking');
+});
+
+test('stopping mid-cook lays down a fleck within about four seconds', () => {
+  const warm = run(createCook(), STIRRING, (s) => s.browning >= 0.4).state;
+  const { t } = run(warm, IDLE, (s) => s.specks >= 1, 30);
+  assert.ok(t < 4.5, `first fleck took ${t.toFixed(1)}s`);
+});
+
+test('walking away scorches it, but not instantly', () => {
+  const warm = run(createCook(), STIRRING, (s) => s.browning >= 0.4).state;
+  const { state, t } = run(warm, IDLE, (s) => s.status === 'burnt', 60);
+  assert.equal(state.burnReason, 'scorched');
+  assert.ok(t > 6 && t < 14, `scorched after ${t.toFixed(1)}s`);
 });
 
 test('a dark roux catches faster than a light one', () => {
@@ -123,4 +139,32 @@ test('a couple of seconds of real stirring unlocks the trinity', () => {
 test('lazy half-hearted stirring doesn’t count toward unlocking', () => {
   const lazy = run(createCook(), { stir: 0.1 }, (_, t) => t >= 5).state;
   assert.equal(canDrop(lazy), false);
+});
+
+test('steady stirring earns a perfect stir score', () => {
+  const { state } = run(createCook(), STIRRING, (s) => s.browning >= 0.67);
+  assert.equal(stirScore(state), 100);
+});
+
+test('brief lifts barely dent the stir score', () => {
+  const { state } = run(createCook(), briefLifts, (s) => s.browning >= 0.67);
+  assert.ok(stirScore(state) >= 85, `stir score ${stirScore(state)}`);
+});
+
+test('stop-and-go stirring scores clearly lower', () => {
+  const { state } = run(createCook(), stopAndGo, (s) => s.browning >= 0.67);
+  const score = stirScore(state);
+  assert.ok(score >= 50 && score <= 80, `stir score ${score}`);
+});
+
+test('never stirring scores near zero', () => {
+  const { state } = run(createCook(), IDLE, (_, t) => t >= 5);
+  assert.ok(stirScore(state) <= 10, `stir score ${stirScore(state)}`);
+});
+
+test('only the cooking counts toward the stir score, not the wait after the trinity', () => {
+  let s = run(createCook(), STIRRING, (st) => st.browning >= 0.5).state;
+  s = dropTrinity(s);
+  const { state } = run(s, IDLE, (st) => st.status === 'done', 20);
+  assert.equal(stirScore(state), 100);
 });

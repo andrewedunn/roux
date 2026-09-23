@@ -54,8 +54,18 @@ doesn't stick, and drop the trinity to stop the cooking.
   falls toward zero; browning continues while it's still warm. That lag is
   the carryover.
 - `stick` 0 → 1 rises when you're not stirring (faster when hot and dark) and
-  falls quickly when you stir. Above a threshold it lays down `specks`, which
-  never go away. Too many specks = scorched.
+  falls quickly when you stir. Past a low threshold it starts laying down
+  `specks` (flecks), gently at first and then at a capped rate; they never go
+  away. Each whole fleck costs 3 points; 10 = scorched.
+- **Consistency matters.** A quick lift of the finger costs nothing, but a
+  ~2-second pause mid-cook leaves a fleck, stop-and-go stirring (3 s on, 2 s
+  off) leaves 2–3 flecks by milk chocolate and ~6 by dark chocolate, and
+  walking away scorches it in about 9 seconds.
+- **Stir score** (0–100, `stirScore` in `src/cook.js`) is the share of cooking
+  time (burner on, before the trinity) that the roux was kept moving, with a
+  0.3 s grace after each stir. Steady stirring = 100, brief lifts ≈ 93,
+  stop-and-go ≈ 60–70. It's shown on each result and averaged on the menu and
+  in the share text, but it doesn't change the roux score — the flecks do that.
 
 ## Current pacing
 

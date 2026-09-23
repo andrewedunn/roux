@@ -21,9 +21,11 @@ export function menuFromLink(search) {
   return seed <= 0xffffffff ? seed : null;
 }
 
-// dishes: [{ dish, score, burnt }]
+// dishes: [{ dish, score, burnt, stir }]
 export function shareText({ seed, dishes, origin }) {
   const total = dishes.reduce((sum, d) => sum + d.score, 0);
+  const stirring = Math.round(dishes.reduce((sum, d) => sum + d.stir, 0) / dishes.length);
+  const header = `Roux Wars — ${total}/${dishes.length * 100} · stirring ${stirring}`;
   const lines = dishes.map((d) => (d.burnt ? `${scoreBar(d)} ${d.dish}` : `${scoreBar(d)} ${d.score} ${d.dish}`));
-  return [`Roux Wars — ${total}/${dishes.length * 100}`, ...lines, menuUrl(origin, seed)].join('\n');
+  return [header, ...lines, menuUrl(origin, seed)].join('\n');
 }

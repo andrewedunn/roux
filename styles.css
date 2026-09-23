@@ -496,6 +496,19 @@ button:focus-visible {
   color: var(--ink-2);
 }
 
+.stir-line {
+  margin: 10px 0 0;
+  font-size: var(--text-body);
+  color: var(--ink-2);
+}
+
+.stir-line strong {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: var(--text-lead);
+  color: var(--ink);
+}
+
 .penalty {
   margin: var(--space-sm) 0 0;
   font-size: var(--text-body);

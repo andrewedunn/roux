@@ -290,8 +290,8 @@ export function createPotRenderer(canvas) {
     ctx.fillRect(-R, -R, R * 2, R * 2);
 
     // Catching on the bottom: a dark band creeps in from the edge.
-    if (v.stick > 0.3) {
-      const a = (v.stick - 0.3) / 0.7;
+    if (v.stick > 0.08) {
+      const a = Math.min(1, (v.stick - 0.08) / 0.6);
       ctx.beginPath();
       ctx.arc(0, 0, R, 0, Math.PI * 2);
       ctx.strokeStyle = `rgba(${C.speckRgb}, ${0.55 * a})`;
@@ -308,7 +308,7 @@ export function createPotRenderer(canvas) {
     ctx.restore();
 
     // Smoke when it's catching or burnt.
-    const smokeRate = v.burnt ? 12 : v.stick > 0.45 ? 10 * (v.stick - 0.45) : 0;
+    const smokeRate = v.burnt ? 12 : v.stick > 0.2 ? 8 * (v.stick - 0.2) : 0;
     spawnSmoke += smokeRate * dt;
     while (spawnSmoke >= 1) {
       spawnSmoke -= 1;

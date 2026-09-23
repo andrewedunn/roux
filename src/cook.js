@@ -13,11 +13,15 @@ const COOL_LAG = 3.2; // seconds for the pot to shed heat once the trinity is in
 const TRINITY_CHILL = 0.9; // cold vegetables knock the heat down right away
 const STICK_RISE = 0.34;
 const STICK_CLEAR = 1.2;
-const SPECK_THRESHOLD = 0.6;
-const SPECK_RATE = 3;
+// Flecks start early and gently as the bottom catches, then top out: a 2-second pause leaves one,
+// walking away scorches it in about 9 seconds.
+const SPECK_THRESHOLD = 0.12;
+const SPECK_RAMP = 0.2;
+const SPECK_RATE = 1.8;
 const SETTLED_RATE = 0.004;
 const MAX_SUBSTEP = 1 / 120;
 const REAL_STIR = 0.35; // stir activity that counts as actually stirring
+const STIR_GRACE = 0.3; // seconds after a stir that still count as "kept it moving"
 
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 
@@ -44,6 +48,9 @@ export function createCook() {
     stick: 0,
     specks: 0,
     stirredFor: 0,
+    sinceStir: 0,
+    cookedFor: 0,
+    coveredFor: 0,
     browningAtDrop: null,
     rateAtDrop: null,
   };
@@ -58,14 +65,19 @@ function substep(s, stir, h) {
 
   let stick = s.stick;
   let specks = s.specks;
-  const stirredFor = !cooling && stir >= REAL_STIR ? s.stirredFor + h : s.stirredFor;
+  const stirring = stir >= REAL_STIR;
+  const stirredFor = !cooling && stirring ? s.stirredFor + h : s.stirredFor;
+  // Stir consistency is only measured while the burner is on, not while the trinity cools it.
+  const sinceStir = stirring ? 0 : s.sinceStir + h;
+  const cookedFor = cooling ? s.cookedFor : s.cookedFor + h;
+  const coveredFor = !cooling && (stirring || sinceStir < STIR_GRACE) ? s.coveredFor + h : s.coveredFor;
   if (cooling) {
     stick = Math.max(0, stick - STICK_CLEAR * h);
   } else {
     stick += h * STICK_RISE * temp ** 1.5 * (0.35 + browning) * (1 - stir);
     stick = clamp01(stick - h * STICK_CLEAR * stir);
     if (stick > SPECK_THRESHOLD) {
-      specks += (h * SPECK_RATE * temp * (stick - SPECK_THRESHOLD)) / (1 - SPECK_THRESHOLD);
+      specks += h * SPECK_RATE * temp * Math.min(1, (stick - SPECK_THRESHOLD) / SPECK_RAMP);
     }
   }
 
@@ -81,7 +93,21 @@ function substep(s, stir, h) {
     status = 'done';
   }
 
-  return { ...s, status, burnReason, elapsed: s.elapsed + h, temp, browning, rate, stick, specks, stirredFor };
+  return {
+    ...s,
+    status,
+    burnReason,
+    elapsed: s.elapsed + h,
+    temp,
+    browning,
+    rate,
+    stick,
+    specks,
+    stirredFor,
+    sinceStir,
+    cookedFor,
+    coveredFor,
+  };
 }
 
 // input: { stir: 0..1 }
@@ -94,6 +120,11 @@ export function stepCook(state, { stir }, dt) {
     remaining -= h;
   }
   return s;
+}
+
+// 0–100: how much of the cooking the roux was kept moving. Stop-and-go stirring scores low.
+export function stirScore(state) {
+  return state.cookedFor > 0 ? Math.round((100 * state.coveredFor) / state.cookedFor) : 100;
 }
 
 // The trinity only goes in once the roux has actually been stirred for a bit.
