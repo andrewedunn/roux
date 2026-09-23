@@ -1,6 +1,6 @@
 // ABOUTME: Game flow and wiring: title → three dishes (ready → cooking → cooling → result) → menu summary.
 // ABOUTME: Owns the frame loop, stirring input, captions, result sheets, and sharing.
-import { createCook, stepCook, dropTrinity } from './cook.js';
+import { createCook, stepCook, dropTrinity, canDrop, STIR_TO_UNLOCK } from './cook.js';
 import { createStir, stirMove, stirRelease, stirTick } from './stir.js';
 import { createMenu } from './menu.js';
 import { scoreDish, menuVerdict } from './score.js';
@@ -41,7 +41,6 @@ const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').match
 const KEYBOARD_SPIN = 6; // rad/s swirl when stirring with the S key
 const SWIRL_FOLLOW = 0.55; // the roux turns a bit slower than the spoon
 const RESULT_DELAY = 450; // ms between the pot settling and the result sheet
-const ACTION_LOCKOUT = 600; // ms after lighting before the same button can drop the trinity (double-taps)
 
 function deviceStorage() {
   try {
@@ -122,17 +121,30 @@ function closeSheet() {
 function setAction(label, kind) {
   els.action.textContent = label;
   els.action.dataset.kind = kind;
-  els.action.setAttribute('aria-disabled', kind === 'wait' ? 'true' : 'false');
+  els.action.setAttribute('aria-disabled', kind === 'wait' || kind === 'locked' ? 'true' : 'false');
+  els.action.style.setProperty('--progress', '0');
+}
+
+// After lighting, the button stays locked (and fills up) until the roux has been stirred for a bit,
+// so nobody taps "Drop the trinity" just because it appeared.
+function updateLock() {
+  if (round.phase !== 'cooking' || round.unlocked) return;
+  if (canDrop(round.cook)) {
+    round.unlocked = true;
+    setAction('Drop the trinity', 'trinity');
+  } else {
+    els.action.style.setProperty('--progress', String(Math.min(1, round.cook.stirredFor / STIR_TO_UNLOCK)));
+  }
 }
 
 function onAction() {
   sound.unlock();
   if (round.phase === 'ready') {
     round.phase = 'cooking';
-    round.litAt = performance.now();
+    round.unlocked = false;
     sound.ignite();
-    setAction('Drop the trinity', 'trinity');
-  } else if (round.phase === 'cooking' && performance.now() - round.litAt > ACTION_LOCKOUT) {
+    setAction('Stir first', 'locked');
+  } else if (round.phase === 'cooking' && canDrop(round.cook)) {
     round.cook = dropTrinity(round.cook);
     round.phase = 'cooling';
     renderer.dropTrinity(performance.now() / 1000);
@@ -308,6 +320,8 @@ function updateCaption() {
     } else if (cook.stick > 0.3) {
       text = 'Starting to stick. Stir.';
       tone = 'warn';
+    } else if (!round.unlocked) {
+      text = 'Stir to get it going.';
     } else {
       text = smellAt(cook.browning);
     }
@@ -351,6 +365,7 @@ function frame(ms) {
       round.cook = stepCook(round.cook, { stir: stirLevel }, dt);
       if (Math.floor(round.cook.specks) > specksBefore) vibrate(12);
       if (round.cook.status === 'done' || round.cook.status === 'burnt') finishDish();
+      updateLock();
     }
 
     const { cook, phase } = round;
@@ -369,7 +384,7 @@ function frame(ms) {
         spoon: round.spoon,
         trail: round.trail,
         burnt: cook.status === 'burnt',
-        hint: !hasStirred && phase === 'ready',
+        hint: (phase === 'ready' && !hasStirred) || (phase === 'cooking' && !round.unlocked && stirLevel < 0.3),
       },
       now,
       dt,

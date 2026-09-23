@@ -13,9 +13,14 @@ doesn't stick, and drop the trinity to stop the cooking.
    appear, and enough specks means it's scorched.
 4. There is one steady burner. (Heat levels were cut: with no reward for speed,
    Low was always the safer pick, so it wasn't a real choice.)
-5. The player taps **Drop the trinity** to commit. The pot keeps darkening for
+5. After lighting, the button is a locked **Stir first** that fills as you stir.
+   It unlocks after ~2 seconds of real stirring (`STIR_TO_UNLOCK` in `src/cook.js`,
+   enforced in the sim), and then reads **Drop the trinity** as a calm outlined
+   key rather than a bright "go" button, so nobody taps it just because it
+   appeared.
+6. The player taps **Drop the trinity** to commit. The pot keeps darkening for
    a moment (carryover) while it cools. Then the result.
-6. A menu is three dishes: one light, one medium, one dark target.
+7. A menu is three dishes: one light, one medium, one dark target.
 
 ## Why it's built this way (from research)
 

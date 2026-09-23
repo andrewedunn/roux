@@ -32,8 +32,8 @@
   --onion: #efe9d6;
   --celery: #a9c77a;
   --pepper: #3d7a3a;
-  --pepper-hover: #468a42;
   --pepper-deep: #2b5a29;
+  --pepper-wash: #dde8d9;
   --char: #9b3219;
   --flame-outer: rgba(58, 104, 222, 0.85);
   --flame-inner: rgba(176, 202, 255, 0.95);
@@ -316,6 +316,9 @@ button:focus-visible {
   letter-spacing: 0.02em;
   white-space: nowrap;
   background: var(--ink);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   transform: translateY(-3px);
   box-shadow: var(--lift-ink);
   transition: transform var(--dur-press) var(--ease-out), box-shadow var(--dur-press) var(--ease-out),
@@ -327,13 +330,40 @@ button:focus-visible {
   box-shadow: 0 0 0 var(--ink-shadow);
 }
 
+/* Once unlocked, "Drop the trinity" is a calm outlined key, not a bright "go" signal. */
 .action[data-kind='trinity'] {
-  background: var(--pepper);
-  box-shadow: var(--lift-pepper);
+  background: var(--card);
+  color: var(--pepper-deep);
+  box-shadow: inset 0 0 0 2px var(--pepper), var(--lift-pepper);
 }
 
 .action[data-kind='trinity']:active {
-  box-shadow: 0 0 0 var(--pepper-deep);
+  box-shadow: inset 0 0 0 2px var(--pepper), 0 0 0 var(--pepper-deep);
+}
+
+/* Locked until you've stirred; the fill shows how close you are. */
+.action[data-kind='locked'] {
+  background: var(--card);
+  color: var(--ink-2);
+  box-shadow: inset 0 0 0 2px var(--rule);
+  transform: none;
+  cursor: default;
+}
+
+.action[data-kind='locked']:active {
+  transform: none;
+  box-shadow: inset 0 0 0 2px var(--rule);
+}
+
+.action[data-kind='locked']::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--pepper-wash);
+  transform-origin: left;
+  transform: scaleX(var(--progress, 0));
+  transition: transform var(--dur-fade) var(--ease-out);
 }
 
 .action[data-kind='wait'] {
@@ -364,10 +394,13 @@ button:focus-visible {
     background: var(--ink-hover);
   }
   .action[data-kind='trinity']:hover {
-    background: var(--pepper-hover);
+    background: var(--pepper-wash);
   }
   .action[data-kind='wait']:hover {
     background: var(--ink-2);
+  }
+  .action[data-kind='locked']:hover {
+    background: var(--card);
   }
   .secondary:hover {
     text-decoration-thickness: 3px;
@@ -702,7 +735,8 @@ button:focus-visible {
     animation: none;
   }
   .title,
-  .action {
+  .action,
+  .action::before {
     transition: none;
   }
 }

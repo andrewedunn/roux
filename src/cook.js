@@ -2,6 +2,7 @@
 // ABOUTME: stepCook advances on real elapsed seconds (sub-stepped) so it plays the same at any frame rate.
 
 export const SCORCH_SPECKS = 10;
+export const STIR_TO_UNLOCK = 2; // seconds of real stirring before the trinity can go in
 
 const BURNER = 0.7; // one steady medium flame
 const START_TEMP = 0.35;
@@ -16,6 +17,7 @@ const SPECK_THRESHOLD = 0.6;
 const SPECK_RATE = 3;
 const SETTLED_RATE = 0.004;
 const MAX_SUBSTEP = 1 / 120;
+const REAL_STIR = 0.35; // stir activity that counts as actually stirring
 
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 
@@ -41,6 +43,7 @@ export function createCook() {
     rate: 0,
     stick: 0,
     specks: 0,
+    stirredFor: 0,
     browningAtDrop: null,
     rateAtDrop: null,
   };
@@ -55,6 +58,7 @@ function substep(s, stir, h) {
 
   let stick = s.stick;
   let specks = s.specks;
+  const stirredFor = !cooling && stir >= REAL_STIR ? s.stirredFor + h : s.stirredFor;
   if (cooling) {
     stick = Math.max(0, stick - STICK_CLEAR * h);
   } else {
@@ -77,7 +81,7 @@ function substep(s, stir, h) {
     status = 'done';
   }
 
-  return { ...s, status, burnReason, elapsed: s.elapsed + h, temp, browning, rate, stick, specks };
+  return { ...s, status, burnReason, elapsed: s.elapsed + h, temp, browning, rate, stick, specks, stirredFor };
 }
 
 // input: { stir: 0..1 }
@@ -92,8 +96,13 @@ export function stepCook(state, { stir }, dt) {
   return s;
 }
 
+// The trinity only goes in once the roux has actually been stirred for a bit.
+export function canDrop(state) {
+  return state.status === 'cooking' && state.stirredFor >= STIR_TO_UNLOCK;
+}
+
 export function dropTrinity(state) {
-  if (state.status !== 'cooking') return state;
+  if (!canDrop(state)) return state;
   return {
     ...state,
     status: 'cooling',

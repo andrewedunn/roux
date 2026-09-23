@@ -2,7 +2,7 @@
 // ABOUTME: Each test drives the real sim with scripted stir input and checks the behavior a player feels.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createCook, stepCook, dropTrinity, SCORCH_SPECKS } from '../src/cook.js';
+import { createCook, stepCook, dropTrinity, canDrop, SCORCH_SPECKS, STIR_TO_UNLOCK } from '../src/cook.js';
 
 const FPS = 60;
 const STIRRING = { stir: 1 };
@@ -104,4 +104,23 @@ test('the sim gives the same result at 30fps and 120fps', () => {
   const slow = at(30);
   const fast = at(120);
   assert.ok(Math.abs(slow - fast) < 0.01, `30fps ${slow} vs 120fps ${fast}`);
+});
+
+test('the trinity can’t go in until the roux has been stirred', () => {
+  const idle = run(createCook(), IDLE, (_, t) => t >= 5).state;
+  assert.equal(canDrop(idle), false);
+  assert.equal(dropTrinity(idle).status, 'cooking');
+});
+
+test('a couple of seconds of real stirring unlocks the trinity', () => {
+  const almost = run(createCook(), STIRRING, (_, t) => t >= STIR_TO_UNLOCK - 0.2).state;
+  assert.equal(canDrop(almost), false);
+  const stirred = run(createCook(), STIRRING, (_, t) => t >= STIR_TO_UNLOCK + 0.1).state;
+  assert.equal(canDrop(stirred), true);
+  assert.equal(dropTrinity(stirred).status, 'cooling');
+});
+
+test('lazy half-hearted stirring doesn’t count toward unlocking', () => {
+  const lazy = run(createCook(), { stir: 0.1 }, (_, t) => t >= 5).state;
+  assert.equal(canDrop(lazy), false);
 });
