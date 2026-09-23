@@ -55,6 +55,32 @@ streaks come later.
   falls quickly when you stir. Above a threshold it lays down `specks`, which
   never go away. Too many specks = scorched.
 
+## Current pacing
+
+Seconds from lighting the burner, stirring steadily:
+
+| Heat | Blond | Peanut butter | Copper penny | Milk chocolate | Brick | Dark chocolate | Black | Burnt |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Low | 25 | 40 | 55 | 67 | 76 | 83 | 89 | 91 |
+| Med | 13 | 21 | 28 | 33 | 37 | 41 | 44 | 45 |
+| High | 8 | 13 | 16 | 19 | 22 | 24 | 25 | 26 |
+
+Carryover after the trinity drop is about 0.01 (low), 0.02 (med), and 0.045
+(high) on the browning scale, where neighboring dark stages are ~0.08–0.12
+apart. With no stirring, the first speck appears after ~6–10s on low, ~4–6s
+on medium, and ~2.5–3.5s on high.
+
+Scoring: one dark stage off scores ~60; a light stage off scores lower because
+light stages are further apart in color (and slower to cook, so easier to hit).
+
+## Known limits
+
+- Stage hex values are estimates and need checking against real roux photos.
+- No haptics on iOS (Safari has no Vibration API); Android gets small pulses.
+- Needs a browser with canvas `roundRect` (Safari 16+, Chrome 99+).
+- Screen color settings (Night Shift, True Tone) can't be detected. Target and
+  pot are on the same screen, so the comparison stays fair.
+
 ## Out of scope for v1
 
 Sharing, daily puzzle, challenge links, streaks, leaderboards, accounts,

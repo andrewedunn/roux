@@ -43,7 +43,11 @@ let hasStirred = false;
 let keyStirring = false;
 let lastFrame = null;
 
-const vibrate = (pattern) => navigator.vibrate?.(pattern);
+// Browsers refuse vibration until the page has had a real tap.
+const vibrate = (pattern) => {
+  if (navigator.userActivation?.hasBeenActive === false) return;
+  navigator.vibrate?.(pattern);
+};
 
 // --- Flow -------------------------------------------------------------------
 
@@ -105,7 +109,7 @@ function finishDish() {
   if (round.cook.status === 'burnt') vibrate([30, 60, 30]);
   const result = scoreDish(round.dish.target, round.cook);
   game.results.push({ dish: round.dish, result });
-  setAction('Still cooking…', 'wait');
+  setAction(result.burnt ? 'Burnt' : 'Done', 'wait');
   setTimeout(() => showResult(result), round.cook.status === 'burnt' ? RESULT_DELAY * 2 : RESULT_DELAY);
 }
 
