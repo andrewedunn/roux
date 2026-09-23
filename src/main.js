@@ -1,12 +1,11 @@
 // ABOUTME: Game flow and wiring: title → three dishes (ready → cooking → cooling → result) → menu summary.
-// ABOUTME: Owns the frame loop, stirring input, captions, result sheets, daily/practice menus, and sharing.
+// ABOUTME: Owns the frame loop, stirring input, captions, result sheets, and sharing.
 import { createCook, stepCook, dropTrinity } from './cook.js';
 import { createStir, stirMove, stirRelease, stirTick } from './stir.js';
 import { createMenu } from './menu.js';
 import { scoreDish, menuVerdict } from './score.js';
 import { STAGES, rouxColor, smellAt } from './roux.js';
-import { dailyNumber, dailySeed, streak } from './daily.js';
-import { shareText, parseLink, challengeLine } from './share.js';
+import { shareText, menuFromLink } from './share.js';
 import { createStore } from './store.js';
 import { createPotRenderer } from './render.js';
 import { createSound } from './audio.js';
@@ -17,14 +16,10 @@ const els = {
   stages: $('stages'),
   intro: $('intro'),
   menuLabel: $('menu-label'),
-  menuScore: $('menu-score'),
-  challenge: $('challenge'),
   start: $('start'),
-  practice: $('practice'),
   kitchen: $('kitchen'),
   topbar: document.querySelector('.topbar'),
   ticket: $('ticket'),
-  ticketNo: $('ticket-no'),
   controls: $('controls'),
   announce: $('announce'),
   progress: $('progress'),
@@ -57,11 +52,10 @@ function deviceStorage() {
 }
 
 const store = createStore(deviceStorage());
-const today = dailyNumber();
-const link = parseLink(window.location.search, today);
-const linkMenu = link.kind === 'daily' ? { kind: 'daily', number: link.number } : { kind: 'practice', seed: link.seed };
+// A shared link (?m=…) opens the same three dishes the sender cooked.
+const linkedSeed = menuFromLink(window.location.search);
 
-let game = null; // { menuRef, menu, index, results, challenge }
+let game = null; // { seed, menu, index, results }
 let round = null; // one dish in progress
 let hasStirred = false;
 let keyStirring = false;
@@ -76,17 +70,10 @@ const vibrate = (pattern) => {
 // --- Flow -------------------------------------------------------------------
 
 const randomSeed = () => (Math.random() * 2 ** 32) >>> 0;
-const menuName = (ref) => (ref.kind === 'daily' ? `#${ref.number}` : 'Practice');
-const menuTitle = (ref) =>
-  ref.kind === 'practice' ? 'Practice menu' : `${ref.number === today ? 'Today’s menu' : 'Menu'} #${ref.number}`;
-const sameMenu = (a, b) => a.kind === b.kind && (a.kind === 'daily' ? a.number === b.number : a.seed === b.seed);
 const totalOf = (dishes) => dishes.reduce((sum, d) => sum + d.score, 0);
 
-// menuRef: { kind: 'daily', number } | { kind: 'practice', seed }
-function startMenu(menuRef) {
-  const seed = menuRef.kind === 'daily' ? dailySeed(menuRef.number) : menuRef.seed;
-  const challenge = sameMenu(menuRef, linkMenu) ? link.challenge : null;
-  game = { menuRef, menu: createMenu(seed), index: 0, results: [], challenge };
+function startMenu(seed) {
+  game = { seed, menu: createMenu(seed), index: 0, results: [] };
   startDish();
 }
 
@@ -104,7 +91,6 @@ function startDish() {
   };
   renderer.reset();
   els.progress.textContent = `Dish ${game.index + 1} of ${game.menu.length}`;
-  els.ticketNo.textContent = menuName(game.menuRef);
   els.chip.style.background = rouxColor(dish.target);
   els.dish.textContent = dish.dish;
   els.target.textContent = `${dish.stage.name} roux`;
@@ -192,7 +178,6 @@ function showResult(r) {
 }
 
 function finishMenu() {
-  const { menuRef } = game;
   const dishes = game.results.map(({ dish, result }) => ({
     dish: dish.dish,
     stage: dish.stage.name,
@@ -201,16 +186,12 @@ function finishMenu() {
     score: result.score,
     burnt: result.burnt,
   }));
-  if (menuRef.kind === 'daily' && !store.dailies()[menuRef.number]) {
-    store.saveDaily(menuRef.number, { playedOn: today, dishes });
-  } else {
-    store.markPlayed();
-  }
-  showSummary({ menuRef, dishes, challenge: game.challenge });
+  store.markPlayed();
+  showSummary(game.seed, dishes);
 }
 
 // dishes: [{ dish, stage, targetHex, finalHex, score, burnt }]
-function showSummary({ menuRef, dishes, challenge }) {
+function showSummary(seed, dishes) {
   const total = totalOf(dishes);
   const rows = dishes
     .map(
@@ -222,47 +203,34 @@ function showSummary({ menuRef, dishes, challenge }) {
       </li>`,
     )
     .join('');
-  // After a practice menu, point at today's daily if it hasn't been cooked yet.
-  const practice = { kind: 'practice', seed: randomSeed() };
-  let next = { label: 'Another practice menu', menu: practice };
-  if (menuRef.kind === 'daily') next = { label: 'Cook one for lagniappe', menu: practice };
-  else if (!store.dailies()[today]) next = { label: 'Cook today’s menu', menu: { kind: 'daily', number: today } };
-
-  // Coming from a challenge link, the head-to-head result is the headline.
-  const headline = challenge == null ? menuVerdict(total) : challengeLine(total, challenge);
-  const notes = challenge == null ? [] : [menuVerdict(total)];
-  if (menuRef.kind === 'daily') {
-    const days = streak(store.dailies(), today);
-    if (days > 1) notes.push(`${days} days in a row.`);
-  }
+  const verdict = menuVerdict(total);
   els.sheet.innerHTML = `
-    <h2 class="menu-title">${menuTitle(menuRef)}</h2>
+    <h2 class="menu-title">Your menu</h2>
     <ol class="menu-rows">${rows}</ol>
     <p class="score" aria-hidden="true"><span class="num">${reduceMotion ? total : 0}</span><span class="of">/${dishes.length * 100}</span></p>
-    <p class="verdict">${headline}</p>
-    ${notes.map((n) => `<p class="note">${n}</p>`).join('')}
+    <p class="verdict">${verdict}</p>
     <div class="sheet-actions">
       <button type="button" class="action" id="share">Share</button>
-      <button type="button" class="secondary" id="again">${next.label}</button>
+      <button type="button" class="secondary" id="again">Cook another menu</button>
     </div>`;
-  openSheet(`${total} out of ${dishes.length * 100}. ${headline}`);
+  openSheet(`${total} out of ${dishes.length * 100}. ${verdict}`);
   countUp(els.sheet.querySelector('.num'), total);
   const shareButton = $('share');
-  shareButton.addEventListener('click', () => shareMenu(menuRef, dishes, shareButton));
+  shareButton.addEventListener('click', () => shareMenu(seed, dishes, shareButton));
   $('again').addEventListener(
     'click',
     () => {
       sound.click();
-      startMenu(next.menu);
+      startMenu(randomSeed());
     },
     { once: true },
   );
   shareButton.focus({ preventScroll: true });
 }
 
-async function shareMenu(menuRef, dishes, button) {
+async function shareMenu(seed, dishes, button) {
   sound.click();
-  const text = shareText({ menu: menuRef, dishes, origin: window.location.origin });
+  const text = shareText({ seed, dishes, origin: window.location.origin });
   if (navigator.share) {
     try {
       await navigator.share({ text });
@@ -474,42 +442,21 @@ els.mute.addEventListener('click', () => {
 
 // --- Title card -------------------------------------------------------------
 
-const linkRecord = () => (link.kind === 'daily' ? store.dailies()[link.number] : null);
-
 function setupTitle() {
-  const record = linkRecord();
   els.intro.hidden = store.hasPlayed();
-  els.menuLabel.textContent = menuTitle(linkMenu);
-
-  els.menuScore.hidden = !record;
-  if (record) els.menuScore.textContent = `You scored ${totalOf(record.dishes)}.`;
-  els.challenge.hidden = link.challenge == null;
-  if (link.challenge != null) els.challenge.textContent = `Score to beat: ${link.challenge}.`;
-
-  if (record) els.start.textContent = 'See how you did';
-  else if (link.kind === 'practice') els.start.textContent = 'Cook this menu';
-  else els.start.textContent = link.number === today ? 'Cook today’s menu' : `Cook menu #${link.number}`;
+  els.menuLabel.hidden = linkedSeed == null;
+  els.menuLabel.textContent = 'Someone shared their menu. Cook the same three dishes.';
+  els.start.textContent = linkedSeed == null ? 'Start cooking' : 'Cook this menu';
 }
 
-// Nothing in the kitchen is reachable (or started) until the player picks a menu on the title card.
-function leaveTitle(menuRef) {
+// Nothing in the kitchen is reachable (or started) until the player leaves the title card.
+els.start.addEventListener('click', () => {
   sound.unlock();
   sound.click();
-  startMenu(menuRef);
+  startMenu(linkedSeed ?? randomSeed());
   els.title.classList.add('gone');
   els.title.inert = true;
   els.kitchen.inert = false;
-}
-
-els.start.addEventListener('click', () => {
-  const record = linkRecord();
-  leaveTitle(linkMenu);
-  if (record) showSummary({ menuRef: linkMenu, dishes: record.dishes, challenge: link.challenge });
-  else els.action.focus({ preventScroll: true });
-});
-
-els.practice.addEventListener('click', () => {
-  leaveTitle({ kind: 'practice', seed: randomSeed() });
   els.action.focus({ preventScroll: true });
 });
 

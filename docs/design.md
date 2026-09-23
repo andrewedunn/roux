@@ -77,30 +77,25 @@ light stages are further apart in color (and slower to cook, so easier to hit).
 - Screen color settings (Night Shift, True Tone) can't be detected. Target and
   pot are on the same screen, so the comparison stays fair.
 
-## Daily menus and sharing
+## Sharing
 
-- **Daily menu #N** is seeded from the day number, so everyone gets the same
-  three dishes. Days roll over at midnight Central time (Louisiana). #1 is
-  2026-09-23. One attempt; the result is saved on the device and the title
-  card shows it instead of letting you replay.
-- **Practice menus** are random and unlimited. After a practice menu, the
-  summary points at today's daily if it hasn't been cooked yet.
+- Every play is a fresh random menu. (A numbered daily menu and "score to
+  beat" challenge links were built and then cut: more machinery than a small
+  game needs.)
 - **Share text** is one header, one line per dish, one link:
 
   ```
-  Roux Wars #12 — 175/300
+  Roux Wars — 175/300
   🟫🟫🟫🟫🟫 94 Crawfish étouffée
   🟫🟫🟫🟫⬜ 81 Grillades & grits
   ⬛⬛⬛⬛⬛ Duck & andouille gumbo
-  https://roux.dunn.us/?d=12&s=175
+  https://roux.dunn.us/?m=zzz
   ```
 
   Brown squares count 20 points each; a burnt dish is all black (not fire,
-  which reads as "great" in group chats).
-- **Challenge links** (`?d=12&s=175`, or `?p=<seed>&s=…` for practice) load the
-  same menu and show "Score to beat". The summary leads with the head-to-head
-  result. The Worker rewrites the link-preview title to "Beat 175 on Roux Wars #12".
-- **No accounts, no server state.** Streaks and results live in localStorage.
+  which reads as "great" in group chats). The link opens the same three
+  dishes, so a friend can cook what you cooked.
+- **No accounts, no server.** The site is static files.
 
 ## Design pass (Hallmark)
 
@@ -110,10 +105,9 @@ card; the target chip and the pot wall share one neutral enamel surround so
 both are judged alike; one five-step type scale; Courier only for text
 "written on the card" and the smell caption; every color, including the
 canvas's, comes from CSS tokens. The Louisiana touches are kept light: "First
-you make a roux.", "Ça c'est bon." for a top score, "Cook one for lagniappe",
-chicory coffee, the po-boy line, and a flat wooden roux paddle. "Mawmaw" is
+you make a roux.", "Ça c'est bon." for a top score, chicory coffee, the po-boy line, and a flat wooden roux paddle. "Mawmaw" is
 the only family term; no dialect spellings.
 
 ## Out of scope for now
 
-Leaderboards, parish rivalries, accounts, PWA/offline, analytics.
+Daily menus, leaderboards, accounts, PWA/offline, analytics.

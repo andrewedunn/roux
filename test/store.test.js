@@ -1,4 +1,4 @@
-// ABOUTME: Tests for saving daily results on the device, including storage that is broken or unavailable.
+// ABOUTME: Tests for remembering on the device that someone has played, including broken or missing storage.
 // ABOUTME: Uses a tiny in-memory Storage stand-in with the same getItem/setItem shape as localStorage.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -21,16 +21,8 @@ const throwingStorage = {
   },
 };
 
-test('a saved daily comes back', () => {
-  const store = createStore(memoryStorage());
-  store.saveDaily(12, { playedOn: 12, dishes: [{ dish: 'Gumbo', score: 90 }] });
-  assert.deepEqual(store.dailies()[12], { playedOn: 12, dishes: [{ dish: 'Gumbo', score: 90 }] });
-});
-
-test('a fresh device has no dailies and has not played', () => {
-  const store = createStore(memoryStorage());
-  assert.deepEqual(store.dailies(), {});
-  assert.equal(store.hasPlayed(), false);
+test('a fresh device has not played', () => {
+  assert.equal(createStore(memoryStorage()).hasPlayed(), false);
 });
 
 test('finishing any menu marks the device as having played', () => {
@@ -39,21 +31,14 @@ test('finishing any menu marks the device as having played', () => {
   assert.equal(store.hasPlayed(), true);
 });
 
-test('corrupted saved data reads as empty instead of crashing', () => {
-  const storage = memoryStorage();
-  storage.setItem('roux-wars:dailies', '{not json');
-  assert.deepEqual(createStore(storage).dailies(), {});
-});
-
 test('storage that throws is survivable', () => {
   const store = createStore(throwingStorage);
-  assert.doesNotThrow(() => store.saveDaily(1, { playedOn: 1, dishes: [] }));
-  assert.deepEqual(store.dailies(), {});
+  assert.doesNotThrow(() => store.markPlayed());
   assert.equal(store.hasPlayed(), false);
 });
 
 test('no storage at all is survivable', () => {
   const store = createStore(undefined);
   assert.doesNotThrow(() => store.markPlayed());
-  assert.deepEqual(store.dailies(), {});
+  assert.equal(store.hasPlayed(), false);
 });
