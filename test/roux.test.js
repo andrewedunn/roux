@@ -52,12 +52,19 @@ test('every smell caption fits the one-line caption (27 characters)', () => {
 test('every stage past white has dishes, and every dish name fits the ticket (26 characters)', () => {
   for (const stage of STAGES.slice(1)) {
     assert.ok(stage.dishes.length >= 1, `${stage.name} has no dishes`);
-    for (const dish of stage.dishes) assert.ok(dish.length <= 26, `"${dish}" is ${dish.length} characters`);
+    for (const { name } of stage.dishes) assert.ok(name.length <= 26, `"${name}" is ${name.length} characters`);
   }
 });
 
 test('the menu has a real range of dishes to draw from', () => {
-  const all = STAGES.flatMap((s) => s.dishes);
-  assert.ok(all.length >= 25, `only ${all.length} dishes`);
-  assert.equal(new Set(all).size, all.length, 'no dish should appear twice');
+  const names = STAGES.flatMap((s) => s.dishes.map((d) => d.name));
+  assert.ok(names.length >= 25, `only ${names.length} dishes`);
+  assert.equal(new Set(names).size, names.length, 'no dish should appear twice');
+});
+
+test('every dish credits where its roux color comes from, with a link', () => {
+  for (const { name, credit, url } of STAGES.flatMap((s) => s.dishes)) {
+    assert.ok(credit && credit.length > 3, `${name} has no credit`);
+    assert.match(url, /^https:\/\//, `${name} needs an https link`);
+  }
 });

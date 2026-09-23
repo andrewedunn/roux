@@ -19,7 +19,8 @@ test('each target sits close to its named stage and names a dish for it', () => 
   for (let seed = 0; seed < 50; seed++) {
     for (const dish of createMenu(seed)) {
       assert.ok(Math.abs(dish.target - dish.stage.at) <= 0.02, `${dish.stage.name} target ${dish.target}`);
-      assert.ok(dish.stage.dishes.includes(dish.dish), `${dish.dish} not listed for ${dish.stage.name}`);
+      assert.ok(dish.stage.dishes.some((d) => d.name === dish.dish), `${dish.dish} not listed for ${dish.stage.name}`);
+      assert.match(dish.source.url, /^https:/);
     }
   }
 });

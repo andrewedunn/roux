@@ -474,6 +474,33 @@ button:focus-visible {
   margin-top: 18px;
 }
 
+.source {
+  margin: 10px 0 0;
+  font-size: var(--text-body);
+  color: var(--ink-2);
+}
+
+.source a,
+.row-name a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+@media (hover: hover) {
+  .source a:hover,
+  .row-name a:hover {
+    text-decoration-thickness: 2px;
+  }
+}
+
+.source a:focus-visible,
+.row-name a:focus-visible {
+  outline: 3px solid var(--pot);
+  outline-offset: 2px;
+}
+
 .menu-title {
   margin: 0 0 10px;
   font-family: var(--display);

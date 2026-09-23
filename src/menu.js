@@ -30,6 +30,7 @@ export function createMenu(seed) {
     const name = pick(rand, stages);
     const stage = STAGES.find((s) => s.name === name);
     const target = Math.min(DARKEST_TARGET, stage.at + (rand() * 2 - 1) * JITTER);
-    return { tier, stage, dish: pick(rand, stage.dishes), target };
+    const { name: dish, credit, url, kind } = pick(rand, stage.dishes);
+    return { tier, stage, dish, source: { credit, url, kind }, target };
   });
 }

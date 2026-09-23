@@ -72,6 +72,12 @@ const vibrate = (pattern) => {
 const randomSeed = () => (Math.random() * 2 ** 32) >>> 0;
 const totalOf = (dishes) => dishes.reduce((sum, d) => sum + d.score, 0);
 
+// Credit and link back to the published recipe (or story) the dish's roux color comes from.
+function sourceLink({ credit, url, kind }) {
+  const label = kind === 'story' ? 'Read more' : 'Get the recipe';
+  return `${label}: <a href="${url}" target="_blank" rel="noopener">${credit}</a>`;
+}
+
 function startMenu(seed) {
   game = { seed, menu: createMenu(seed), index: 0, results: [] };
   startDish();
@@ -157,6 +163,7 @@ function showResult(r) {
     <p class="verdict">${r.verdict}</p>
     <p class="tip">${r.tip}</p>
     ${r.speckPenalty ? `<p class="penalty">−${r.speckPenalty} for scorched bits</p>` : ''}
+    <p class="source">${sourceLink(round.dish.source)}</p>
     <button type="button" class="action" id="next">${last ? 'See your menu' : 'Next dish'}</button>`;
   openSheet(`${r.score} out of 100. ${r.verdict} ${r.tip}`);
   countUp(els.sheet.querySelector('.num'), r.score);
@@ -181,6 +188,7 @@ function finishMenu() {
   const dishes = game.results.map(({ dish, result }) => ({
     dish: dish.dish,
     stage: dish.stage.name,
+    source: dish.source,
     targetHex: result.targetHex,
     finalHex: result.finalHex,
     score: result.score,
@@ -198,7 +206,7 @@ function showSummary(seed, dishes) {
       (d) => `
       <li>
         <span class="pair"><i style="background:${d.targetHex}"></i><i style="background:${d.finalHex}"></i></span>
-        <span class="row-name">${d.dish}<small>${d.stage} roux${d.burnt ? ' · burnt' : ''}</small></span>
+        <span class="row-name"><a href="${d.source.url}" target="_blank" rel="noopener">${d.dish}</a><small>${d.stage} roux${d.burnt ? ' · burnt' : ''}</small></span>
         <span class="row-pts">${d.score}</span>
       </li>`,
     )
