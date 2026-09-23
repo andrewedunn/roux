@@ -5,8 +5,13 @@ stick, and drop the trinity to stop the cooking — it keeps darkening for a mom
 
 Mobile-first browser game at **https://roux.dunn.us**. No build step, no dependencies.
 
-- Each play is a menu of three dishes (light, medium, dark), picked at random.
+- Each play is a menu of three dishes (light, medium, dark), picked at random
+  from 49 real Louisiana recipes, each credited and linked on the result screen.
+- Every dish gets a roux score (how close the color is) and a stir score (how
+  steadily you kept it moving). Pauses leave flecks that cost points.
 - **Share** posts a text scorecard with a link that opens the same three dishes.
+
+Code: https://github.com/andrewedunn/roux (private).
 
 ## Run it
 
@@ -24,7 +29,8 @@ npm test
 ```
 
 Uses Node's built-in test runner. Tests cover the game logic (color math,
-cooking sim, stirring, scoring, menus, share text, links, storage). Rendering and sound are checked by playing.
+cooking sim, stirring, scoring, menus, share text, links, storage).
+Rendering and sound are checked by playing.
 
 ## Deploy it
 
@@ -40,9 +46,9 @@ keeps tests, docs, and config out of the public files.
 
 | File | What it does |
 | --- | --- |
-| `src/cook.js` | The cooking sim: heat lag, browning, sticking, specks, carryover, burning. Pure. |
-| `src/roux.js` | Stage colors, dishes, and smell captions along the 0→1 browning scale. |
-| `src/score.js` | OKLab scoring, verdict lines, and the "pull it ~0.8 s sooner" tip. |
+| `src/cook.js` | The cooking sim: browning, sticking, flecks, carryover, burning, the stir lock, and the stir score. Pure. |
+| `src/roux.js` | Stage colors, the 49 dishes with recipe credits, and smell captions along the 0→1 browning scale. |
+| `src/score.js` | OKLab scoring, verdict lines (dish, menu, stirring), and the "pull it ~0.8 s sooner" tip. |
 | `src/stir.js` | Finger movement → stir activity (0..1) and swirl direction. |
 | `src/menu.js` | Seeded three-dish menus (light, medium, dark). |
 | `src/share.js` | Share text and the menu link (`?m=…`). |

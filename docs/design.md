@@ -8,9 +8,9 @@ doesn't stick, and drop the trinity to stop the cooking.
 1. A dish card shows the target roux as a paint chip (e.g. "Peanut butter —
    Crawfish étouffée").
 2. The burner comes on. The roux darkens on its own.
-3. The player **stirs** by circling a finger in the pot. Stirring is a
-   forgiving keep-alive: stop too long and the bottom catches, black specks
-   appear, and enough specks means it's scorched.
+3. The player **stirs** by circling a finger in the pot. Steady stirring keeps
+   the bottom from catching; pauses leave black flecks (−3 each), and enough
+   flecks means it's scorched. A stir score shows how steadily you did it.
 4. There is one steady burner. (Heat levels were cut: with no reward for speed,
    Low was always the safer pick, so it wasn't a real choice.)
 5. After lighting, the button is a locked **Stir first** that fills as you stir.
@@ -78,8 +78,8 @@ Seconds from lighting the burner, stirring steadily:
 Carryover after the trinity drop is 0.03–0.04 on the browning scale — about
 1.3 seconds' worth of cooking at every stage — and the pot settles about 3
 seconds after the drop. Neighboring dark stages are ~0.08–0.12 apart, so
-ignoring carryover costs real points. With no stirring, the first speck
-appears after ~4–6 seconds.
+ignoring carryover costs real points. Stop stirring mid-cook and the first
+fleck appears after about 2 seconds; walk away and it scorches in about 9.
 
 Scoring: one dark stage off scores ~60; a light stage off scores lower because
 light stages are further apart in color (and slower to cook, so easier to hit).
@@ -100,7 +100,7 @@ light stages are further apart in color (and slower to cook, so easier to hit).
 - **Share text** is one header, one line per dish, one link:
 
   ```
-  Roux Wars — 175/300
+  Roux Wars — 175/300 · stirring 83
   🟫🟫🟫🟫🟫 94 Crawfish étouffée
   🟫🟫🟫🟫⬜ 81 Grillades & grits
   ⬛⬛⬛⬛⬛ Duck & andouille gumbo
@@ -109,7 +109,11 @@ light stages are further apart in color (and slower to cook, so easier to hit).
 
   Brown squares count 20 points each; a burnt dish is all black (not fire,
   which reads as "great" in group chats). The link opens the same three
-  dishes, so a friend can cook what you cooked.
+  dishes, so a friend can cook what you cooked. The header carries the
+  average stir score.
+- **Recipe credits.** Each result and each row of the menu summary links to
+  the published recipe that dish's roux color comes from (see
+  [dishes.md](dishes.md)). We link and credit; we don't copy recipes.
 - **No accounts, no server.** The site is static files.
 
 ## Design pass (Hallmark)
@@ -120,8 +124,9 @@ card; the target chip and the pot wall share one neutral enamel surround so
 both are judged alike; one five-step type scale; Courier only for text
 "written on the card" and the smell caption; every color, including the
 canvas's, comes from CSS tokens. The Louisiana touches are kept light: "First
-you make a roux.", "Ça c'est bon." for a top score, chicory coffee, the po-boy line, and a flat wooden roux paddle. "Mawmaw" is
-the only family term; no dialect spellings.
+you make a roux.", "Ça c'est bon." for a top score, chicory coffee, the
+po-boy line, and a flat wooden roux paddle. "Mawmaw" is the only family term;
+no dialect spellings.
 
 ## Out of scope for now
 
