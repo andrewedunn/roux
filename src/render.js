@@ -13,7 +13,7 @@ const WOOD_EDGE = '#8e6230';
 const SPECK = '#140e0a';
 // Onion, celery, bell pepper: the classic 2:1:1.
 const TRINITY_COLORS = ['#efe9d6', '#efe9d6', '#a9c77a', '#4e8b3a'];
-const FLAME_LEVEL = { low: 0.35, med: 0.65, high: 1 };
+const FLAME_LEVEL = 0.65;
 
 const frac = (x) => x - Math.floor(x);
 
@@ -400,11 +400,11 @@ export function createPotRenderer(canvas) {
     ctx.restore();
   }
 
-  // view: { color, temp, heat, burnerOn, active, stick, specks, swirl, stirActivity, spoon, trail, burnt, hint }
+  // view: { color, temp, burnerOn, active, stick, specks, swirl, stirActivity, spoon, trail, burnt, hint }
   // spoon and trail points are in canvas CSS pixels.
   function draw(v, now, dt) {
     const { S, cx, cy, Ro, Rw, R } = geometry();
-    flame += ((v.burnerOn ? FLAME_LEVEL[v.heat] : 0) - flame) * (1 - Math.exp(-dt / 0.25));
+    flame += ((v.burnerOn ? FLAME_LEVEL : 0) - flame) * (1 - Math.exp(-dt / 0.25));
 
     ctx.clearRect(0, 0, w, h);
     ctx.save();

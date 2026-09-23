@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- ABOUTME: Page shell for Roux Wars: title card, kitchen (target ticket, pot canvas, heat keys, action), result sheet. -->
+<!-- ABOUTME: Page shell for Roux Wars: title card, kitchen (target ticket, pot canvas, action button), result sheet. -->
 <!-- ABOUTME: Light-only on purpose: brown only reads as brown against lighter surroundings. -->
 <html lang="en">
   <head>
@@ -44,11 +44,6 @@
       <p class="caption" id="caption" aria-live="polite"></p>
 
       <div class="controls">
-        <div class="heat" role="group" aria-label="Heat">
-          <button type="button" data-heat="low" aria-pressed="false"><span class="lamp"></span>Low</button>
-          <button type="button" data-heat="med" aria-pressed="true"><span class="lamp"></span>Med</button>
-          <button type="button" data-heat="high" aria-pressed="false"><span class="lamp"></span>High</button>
-        </div>
         <button type="button" class="action" id="action" data-kind="light">Light the burner</button>
       </div>
 
@@ -62,7 +57,6 @@
         <p class="tagline">Cook the roux to the color on the card. Don’t burn it.</p>
         <ul class="howto">
           <li><b>Stir</b> in circles so it doesn’t stick.</li>
-          <li><b>Heat:</b> hotter is faster, and riskier.</li>
           <li><b>Drop the trinity</b> to stop the cooking. It keeps darkening for a moment.</li>
         </ul>
         <button type="button" class="action" id="start">Start cooking</button>

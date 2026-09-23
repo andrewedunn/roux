@@ -1,4 +1,4 @@
-/* ABOUTME: Styles for Roux Wars: a light enamel stovetop, index-card ticket, push-button heat keys, result sheet. */
+/* ABOUTME: Styles for Roux Wars: a light enamel stovetop, index-card ticket, result sheet. */
 /* ABOUTME: Mobile-first single column; no page scroll; the pot area takes all leftover height. */
 
 :root {
@@ -13,9 +13,6 @@
   --pepper-deep: #2b5a29;
   --flame: #e3632b;
   --char: #9b3219;
-  --key: #f4f2eb;
-  --key-shadow: #b8b5aa;
-  --chrome: #c6c9c9;
 
   --display: 'Ultra', 'Rockwell', Georgia, serif;
   --ui: 'Barlow Semi Condensed', 'Arial Narrow', system-ui, sans-serif;
@@ -227,55 +224,11 @@ button:focus-visible {
   gap: 12px;
 }
 
-.heat {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-  padding: 6px;
-  border-radius: 12px;
-  background: var(--chrome);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.28), 0 1px 0 rgba(255, 255, 255, 0.7);
-}
 
-.heat button {
-  height: 50px;
-  border: 0;
-  border-radius: 7px;
-  background: var(--key);
-  font-weight: 700;
-  font-size: 15px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transform: translateY(-2px);
-  box-shadow: 0 3px 0 var(--key-shadow), 0 5px 6px -2px rgba(0, 0, 0, 0.25);
-  transition: transform 0.07s, box-shadow 0.07s;
-}
 
-.heat button[aria-pressed='true'] {
-  transform: translateY(1px);
-  box-shadow: 0 0 0 var(--key-shadow), inset 0 2px 5px rgba(0, 0, 0, 0.22);
-}
 
-.heat .lamp {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #bdb8ac;
-}
 
-.heat [aria-pressed='true'] .lamp {
-  background: var(--flame);
-  box-shadow: 0 0 6px 1px rgba(227, 99, 43, 0.7);
-}
 
-.heat.off [aria-pressed='true'] .lamp {
-  background: #bdb8ac;
-  box-shadow: none;
-}
 
 .action {
   height: 60px;
@@ -576,7 +529,6 @@ button:focus-visible {
     animation: none;
   }
   .title,
-  .heat button,
   .action {
     transition: none;
   }

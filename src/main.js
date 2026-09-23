@@ -1,5 +1,5 @@
 // ABOUTME: Game flow and wiring: title → three dishes (ready → cooking → cooling → result) → menu summary.
-// ABOUTME: Owns the frame loop, pointer/keyboard stirring, heat keys, captions, and the result sheets.
+// ABOUTME: Owns the frame loop, pointer/keyboard stirring, captions, and the result sheets.
 import { createCook, stepCook, dropTrinity } from './cook.js';
 import { createStir, stirMove, stirRelease, stirTick } from './stir.js';
 import { createMenu } from './menu.js';
@@ -21,8 +21,6 @@ const els = {
   stove: $('stove'),
   canvas: $('pot'),
   caption: $('caption'),
-  heat: document.querySelector('.heat'),
-  heatKeys: [...document.querySelectorAll('[data-heat]')],
   action: $('action'),
   sheet: $('sheet'),
 };
@@ -38,7 +36,6 @@ const ACTION_LOCKOUT = 600; // ms after lighting before the same button can drop
 
 let game = null; // { menu, index, results }
 let round = null; // one dish in progress
-let heat = 'med';
 let hasStirred = false;
 let keyStirring = false;
 let lastFrame = null;
@@ -75,7 +72,6 @@ function startDish() {
   els.target.textContent = `${dish.stage.name} roux`;
   els.sheet.hidden = true;
   els.sheet.innerHTML = '';
-  els.heat.classList.remove('off');
   setAction('Light the burner', 'light');
 }
 
@@ -98,14 +94,12 @@ function onAction() {
     renderer.dropTrinity(performance.now() / 1000);
     sound.trinity();
     vibrate(25);
-    els.heat.classList.add('off');
     setAction('Still cooking…', 'wait');
   }
 }
 
 function finishDish() {
   round.phase = 'settled';
-  els.heat.classList.add('off');
   if (round.cook.status === 'burnt') vibrate([30, 60, 30]);
   const result = scoreDish(round.dish.target, round.cook);
   game.results.push({ dish: round.dish, result });
@@ -200,7 +194,7 @@ function updateCaption() {
   let text = '';
   let tone = '';
   if (phase === 'ready') {
-    text = hasStirred ? 'Pick your heat, then light it.' : 'Try stirring in circles.';
+    text = hasStirred ? 'Light it when you’re ready.' : 'Try stirring in circles.';
   } else if (phase === 'cooking') {
     if (cook.stick > 0.55) {
       text = 'It’s catching on the bottom. Stir!';
@@ -248,7 +242,7 @@ function frame(ms) {
 
     if (round.phase === 'cooking' || round.phase === 'cooling') {
       const specksBefore = Math.floor(round.cook.specks);
-      round.cook = stepCook(round.cook, { heat, stir: stirLevel }, dt);
+      round.cook = stepCook(round.cook, { stir: stirLevel }, dt);
       if (Math.floor(round.cook.specks) > specksBefore) vibrate(12);
       if (round.cook.status === 'done' || round.cook.status === 'burnt') finishDish();
     }
@@ -260,7 +254,6 @@ function frame(ms) {
       {
         color: rouxColor(cook.browning),
         temp: cook.temp,
-        heat,
         burnerOn: phase === 'cooking',
         active: sizzling,
         stick: phase === 'cooking' ? cook.stick : 0,
@@ -338,15 +331,6 @@ window.addEventListener('keyup', (e) => {
 });
 window.addEventListener('blur', endKeyStir);
 
-for (const key of els.heatKeys) {
-  key.addEventListener('click', () => {
-    if (round && (round.phase === 'cooling' || round.phase === 'settled' || round.phase === 'result')) return;
-    sound.unlock();
-    sound.click();
-    heat = key.dataset.heat;
-    for (const k of els.heatKeys) k.setAttribute('aria-pressed', String(k === key));
-  });
-}
 
 els.action.addEventListener('click', onAction);
 

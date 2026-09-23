@@ -1,20 +1,20 @@
 // ABOUTME: Pure cooking simulation for one pot of roux: heat lag, browning, sticking, specks, carryover.
 // ABOUTME: stepCook advances on real elapsed seconds (sub-stepped) so it plays the same at any frame rate.
 
-export const HEAT = { low: 0.45, med: 0.7, high: 1.0 };
 export const SCORCH_SPECKS = 10;
 
+const BURNER = 0.7; // one steady medium flame
 const START_TEMP = 0.35;
 const BROWN_RATE = 0.041;
 const HEAT_EXPONENT = 1.7;
-const HEAT_LAG = 2.5; // seconds for the pot to chase the burner setting
-const COOL_LAG = 2.0; // seconds for the pot to shed heat once the trinity is in
-const TRINITY_CHILL = 0.85; // cold vegetables knock the heat down right away
+const HEAT_LAG = 2.5; // seconds for the pot to come up to the burner
+const COOL_LAG = 3.2; // seconds for the pot to shed heat once the trinity is in
+const TRINITY_CHILL = 0.9; // cold vegetables knock the heat down right away
 const STICK_RISE = 0.34;
 const STICK_CLEAR = 1.2;
 const SPECK_THRESHOLD = 0.6;
 const SPECK_RATE = 3;
-const SETTLED_RATE = 0.002;
+const SETTLED_RATE = 0.004;
 const MAX_SUBSTEP = 1 / 120;
 
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
@@ -46,9 +46,9 @@ export function createCook() {
   };
 }
 
-function substep(s, heat, stir, h) {
+function substep(s, stir, h) {
   const cooling = s.status === 'cooling';
-  const target = cooling ? 0 : HEAT[heat];
+  const target = cooling ? 0 : BURNER;
   const temp = target + (s.temp - target) * Math.exp(-h / (cooling ? COOL_LAG : HEAT_LAG));
   const rate = browningRate(temp, s.browning);
   const browning = s.browning + rate * h;
@@ -80,13 +80,13 @@ function substep(s, heat, stir, h) {
   return { ...s, status, burnReason, elapsed: s.elapsed + h, temp, browning, rate, stick, specks };
 }
 
-// input: { heat: 'low' | 'med' | 'high', stir: 0..1 }
-export function stepCook(state, { heat, stir }, dt) {
+// input: { stir: 0..1 }
+export function stepCook(state, { stir }, dt) {
   let s = state;
   let remaining = dt;
   while (remaining > 1e-9 && (s.status === 'cooking' || s.status === 'cooling')) {
     const h = Math.min(MAX_SUBSTEP, remaining);
-    s = substep(s, heat, clamp01(stir), h);
+    s = substep(s, clamp01(stir), h);
     remaining -= h;
   }
   return s;
