@@ -2,7 +2,7 @@
 // ABOUTME: Uses real stage colors so "one stage off" means what a player would see.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { scoreDish } from '../src/score.js';
+import { scoreDish, menuVerdict } from '../src/score.js';
 import { STAGES } from '../src/roux.js';
 
 const at = (name) => STAGES.find((s) => s.name === name).at;
@@ -72,4 +72,10 @@ test('a scorched roux says it was scorched', () => {
 test('score never goes below zero', () => {
   const r = scoreDish(at('Blond'), finished(at('Black'), { specks: 9 }));
   assert.equal(r.score, 0);
+});
+
+test('menu verdicts get kinder as the three-dish total rises', () => {
+  const lines = [0, 80, 160, 230, 280].map(menuVerdict);
+  assert.equal(new Set(lines).size, lines.length, 'each band should have its own line');
+  assert.equal(menuVerdict(300), menuVerdict(280));
 });

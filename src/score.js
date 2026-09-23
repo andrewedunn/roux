@@ -78,3 +78,15 @@ export function scoreDish(targetBrowning, cook) {
     tip: tipFor(direction, dE, secondsOff ?? 0),
   };
 }
+
+const MENU_VERDICTS = [
+  { min: 270, text: 'Somebody enter you in a cook-off.' },
+  { min: 225, text: 'The family’s coming back for seconds.' },
+  { min: 150, text: 'Solid. Nobody’s complaining out loud.' },
+  { min: 75, text: 'Maybe order in tonight.' },
+  { min: 0, text: 'Mawmaw’s taking over the stove.' },
+];
+
+export function menuVerdict(total) {
+  return MENU_VERDICTS.find((v) => total >= v.min).text;
+}
