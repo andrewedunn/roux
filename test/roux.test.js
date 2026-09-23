@@ -1,0 +1,43 @@
+// ABOUTME: Tests for the roux stage table: color along the browning scale, stage names, and smells.
+// ABOUTME: Guards the design intents that roux only darkens and dark stages sit closer together.
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { STAGES, BURNT_HEX, rouxColor, nearestStage, smellAt } from '../src/roux.js';
+import { hexToOklab } from '../src/color.js';
+
+test('rouxColor returns each stage hex at that stage position', () => {
+  for (const stage of STAGES) {
+    assert.equal(rouxColor(stage.at), stage.hex, stage.name);
+  }
+});
+
+test('roux only gets darker as browning increases', () => {
+  let prevL = Infinity;
+  for (let i = 0; i <= 100; i++) {
+    const L = hexToOklab(rouxColor(i / 100)).L;
+    assert.ok(L <= prevL + 1e-9, `lighter at browning ${i / 100}`);
+    prevL = L;
+  }
+});
+
+test('past full browning the roux turns burnt', () => {
+  assert.equal(rouxColor(1.3), BURNT_HEX);
+});
+
+test('dark stages sit closer together than light ones', () => {
+  const gap = (a, b) => STAGES.find((s) => s.name === b).at - STAGES.find((s) => s.name === a).at;
+  assert.ok(gap('Milk chocolate', 'Brick') < gap('Peanut butter', 'Copper penny'));
+  assert.ok(gap('Dark chocolate', 'Black') < gap('Milk chocolate', 'Brick'));
+});
+
+test('nearestStage names the closest stage', () => {
+  const pb = STAGES.find((s) => s.name === 'Peanut butter');
+  assert.equal(nearestStage(pb.at + 0.01).name, 'Peanut butter');
+  assert.equal(nearestStage(0).name, 'White');
+});
+
+test('smell moves from raw flour to a warning as it darkens', () => {
+  assert.match(smellAt(0), /raw flour/i);
+  assert.match(smellAt(0.3), /toast/i);
+  assert.match(smellAt(0.97), /careful/i);
+});
