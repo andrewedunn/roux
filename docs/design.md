@@ -1,10 +1,7 @@
-# Roux Wars — v1 design
+# Roux Wars — design
 
 A mobile-first browser game: cook a roux to match a target color. Stir so it
-doesn't stick, pick your heat, and drop the trinity to stop the cooking.
-
-v1 is about locking in the *play*. Sharing, dailies, challenge links, and
-streaks come later.
+doesn't stick, and drop the trinity to stop the cooking.
 
 ## Core loop: stir and pull
 
@@ -28,12 +25,12 @@ streaks come later.
   roux can't be saved.
 - **Smell, not labels.** The current stage name is never shown while cooking —
   that would turn it into a "wait for the label" game. Instead a caption
-  describes the smell (popcorn → toasted bread → pecans → coffee → acrid),
+  describes the smell (popcorn → toasted bread → pecans → chicory coffee → sharp),
   which is how real cooks judge the dark end.
 - **Perceptual scoring.** Score by OKLab distance, not RGB. The curve is tuned
   so one named stage off is roughly 60, not 90 (Dialed-style curves bunch
   everyone near the top).
-- **Honest near-miss feedback.** "A shade dark. Pull it about 0.8s sooner."
+- **Honest near-miss feedback.** "A shade dark. Pull it about 0.8 s sooner."
   The seconds come from the browning rate at the moment you dropped.
 - **Light surroundings.** Brown only reads as brown when it's darker than what
   surrounds it; on black it reads orange. So the stovetop is light, the pot has
@@ -48,9 +45,9 @@ streaks come later.
 ## Simulation model (`src/cook.js`)
 
 - `browning` 0 → 1 is raw → black. Past 1 is burnt.
-- `temp` 0 → 1 chases the heat setting with lag. After the trinity drop it
-  falls quickly toward zero; browning continues while it's still warm. That
-  lag is the carryover, and it's bigger at high heat.
+- `temp` 0 → 1 warms up toward one steady burner. After the trinity drop it
+  falls toward zero; browning continues while it's still warm. That lag is
+  the carryover.
 - `stick` 0 → 1 rises when you're not stirring (faster when hot and dark) and
   falls quickly when you stir. Above a threshold it lays down `specks`, which
   never go away. Too many specks = scorched.
