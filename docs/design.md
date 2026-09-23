@@ -14,8 +14,8 @@ streaks come later.
 3. The player **stirs** by circling a finger in the pot. Stirring is a
    forgiving keep-alive: stop too long and the bottom catches, black specks
    appear, and enough specks means it's scorched.
-4. The player picks **heat** (Low / Med / High). Hotter browns faster, catches
-   faster, and carries over more.
+4. There is one steady burner. (Heat levels were cut: with no reward for speed,
+   Low was always the safer pick, so it wasn't a real choice.)
 5. The player taps **Drop the trinity** to commit. The pot keeps darkening for
    a moment (carryover) while it cools. Then the result.
 6. A menu is three dishes: one light, one medium, one dark target.
@@ -59,16 +59,15 @@ streaks come later.
 
 Seconds from lighting the burner, stirring steadily:
 
-| Heat | Blond | Peanut butter | Copper penny | Milk chocolate | Brick | Dark chocolate | Black | Burnt |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Low | 25 | 40 | 55 | 67 | 76 | 83 | 89 | 91 |
-| Med | 13 | 21 | 28 | 33 | 37 | 41 | 44 | 45 |
-| High | 8 | 13 | 16 | 19 | 22 | 24 | 25 | 26 |
+| Blond | Peanut butter | Copper penny | Milk chocolate | Brick | Dark chocolate | Black | Burnt |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 13 | 21 | 28 | 33 | 37 | 41 | 44 | 45 |
 
-Carryover after the trinity drop is about 0.01 (low), 0.02 (med), and 0.045
-(high) on the browning scale, where neighboring dark stages are ~0.08–0.12
-apart. With no stirring, the first speck appears after ~6–10s on low, ~4–6s
-on medium, and ~2.5–3.5s on high.
+Carryover after the trinity drop is 0.03–0.04 on the browning scale — about
+1.3 seconds' worth of cooking at every stage — and the pot settles about 3
+seconds after the drop. Neighboring dark stages are ~0.08–0.12 apart, so
+ignoring carryover costs real points. With no stirring, the first speck
+appears after ~4–6 seconds.
 
 Scoring: one dark stage off scores ~60; a light stage off scores lower because
 light stages are further apart in color (and slower to cook, so easier to hit).
@@ -81,7 +80,43 @@ light stages are further apart in color (and slower to cook, so easier to hit).
 - Screen color settings (Night Shift, True Tone) can't be detected. Target and
   pot are on the same screen, so the comparison stays fair.
 
-## Out of scope for v1
+## Daily menus and sharing
 
-Sharing, daily puzzle, challenge links, streaks, leaderboards, accounts,
-server, PWA/offline.
+- **Daily menu #N** is seeded from the day number, so everyone gets the same
+  three dishes. Days roll over at midnight Central time (Louisiana). #1 is
+  2026-09-23. One attempt; the result is saved on the device and the title
+  card shows it instead of letting you replay.
+- **Practice menus** are random and unlimited. After a practice menu, the
+  summary points at today's daily if it hasn't been cooked yet.
+- **Share text** is one header, one line per dish, one link:
+
+  ```
+  Roux Wars #12 — 175/300
+  🟫🟫🟫🟫🟫 94 Crawfish étouffée
+  🟫🟫🟫🟫⬜ 81 Grillades & grits
+  ⬛⬛⬛⬛⬛ Duck & andouille gumbo
+  https://roux.dunn.us/?d=12&s=175
+  ```
+
+  Brown squares count 20 points each; a burnt dish is all black (not fire,
+  which reads as "great" in group chats).
+- **Challenge links** (`?d=12&s=175`, or `?p=<seed>&s=…` for practice) load the
+  same menu and show "Score to beat". The summary leads with the head-to-head
+  result. The Worker rewrites the link-preview title to "Beat 175 on Roux Wars #12".
+- **No accounts, no server state.** Streaks and results live in localStorage.
+
+## Design pass (Hallmark)
+
+The UI went through a Hallmark audit (Andrew's anti-AI-slop design skill).
+The notable decisions: the kitchen is inert and unstarted behind the title
+card; the target chip and the pot wall share one neutral enamel surround so
+both are judged alike; one five-step type scale; Courier only for text
+"written on the card" and the smell caption; every color, including the
+canvas's, comes from CSS tokens. The Louisiana touches are kept light: "First
+you make a roux.", "Ça c'est bon." for a top score, "Cook one for lagniappe",
+chicory coffee, the po-boy line, and a flat wooden roux paddle. "Mawmaw" is
+the only family term; no dialect spellings.
+
+## Out of scope for now
+
+Leaderboards, parish rivalries, accounts, PWA/offline, analytics.
