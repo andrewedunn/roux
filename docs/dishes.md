@@ -1,56 +1,93 @@
 # Dishes and their roux
 
-Every dish in `src/roux.js` uses both a roux and the trinity (onion, celery,
-bell pepper), and its roux color comes from a published recipe or interview.
-Researched 2026-09-23. Where a source said "light brown" it's mapped to Peanut
-butter, "dark brown" to Dark chocolate, and "dark red-brown" or "mahogany" to Brick.
+Every dish in `src/roux.js` is a specific published recipe that uses a roux and
+the trinity (onion, celery, bell pepper) and says what color to take the roux.
+When Louisiana cooks disagree on a dish's color — étouffée, gumbo, sauce
+piquante, fricassée, grillades, courtbouillon — each version is its own dish,
+named by place or style (never by a person), and credited and linked in the
+game. We link to recipes; we don't copy them.
 
-| Dish | Stage | Also seen as | Source |
-| --- | --- | --- | --- |
-| Corn & crab bisque | Blond | – | [Emeril](https://www.emerils.com/123393/louisiana-corn-and-crab-bisque) |
-| Oyster & artichoke bisque | Blond | – | [John Folse](https://www.fox8live.com/2018/09/12/chef-folse-oyster-artichoke-bisque/) |
-| Seafood au gratin | Blond | – | [John Folse](https://www.wafb.com/story/398868/chef-john-folses-seafood-au-gratin/) |
-| Crawfish fettuccine | Blond | – | [Louisiana Cookin'](https://louisianacookin.com/crawfish-fettuccini/) |
-| Crawfish étouffée | Blond | Peanut butter | [John Folse](https://www.wafb.com/story/6267150/chef-john-folses-louisiana-style-crawfish-etoufee/) |
-| Shrimp étouffée | Peanut butter | Brick | [Emeril](https://www.emerils.com/126622/shrimp-etouffee) |
-| Shrimp Creole | Peanut butter | Blond | [Louisiana Cookin'](https://louisianacookin.com/shrimp-creole/), [Acadiana Table](https://acadianatable.com/2025/10/13/louisiana-shrimp-creole/) |
-| Chicken Creole | Peanut butter | Blond | [John Folse](https://www.wafb.com/2022/01/01/lite-flavorful-chicken-creole/) |
-| Shrimp & corn soup | Peanut butter | Blond | Donald Link, *Real Cajun* |
-| Turtle soup | Peanut butter | Copper penny | [Commander's Palace](https://www.foodnetwork.com/recipes/turtle-soup-recipe-1951164) |
-| Shrimp stew | Peanut butter | Dark chocolate | [Louisiana Cookin'](https://louisianacookin.com/shrimp-stew/) |
-| Crawfish stew | Copper penny | Peanut butter | [RealCajunRecipes](https://www.realcajunrecipes.com/recipe/shrimp-or-crawfish-stew/) |
-| Seafood gumbo | Copper penny | Milk chocolate | Donald Link, *Real Cajun*; [Emeril](https://www.emerils.com/126534/emerils-classic-seafood-gumbo) |
-| Chicken & sausage gumbo | Milk chocolate | Dark chocolate | [Isaac Toups](https://deepsouthmag.com/2020/10/20/chef-isaac-toups-chicken-sausage-gumbo/) |
-| Grillades & grits | Milk chocolate | Copper penny | [America's Test Kitchen](https://www.americastestkitchen.com/recipes/13442-slow-cooker-pork-grillades) |
-| Gumbo ya-ya | Brick | Dark chocolate | [Mr. B's Bistro](https://www.mrbsbistro.com/recipes_gumbo.php) |
-| Redfish courtbouillon | Brick | Dark chocolate | [Isaac Toups](https://deepsouthmag.com/2019/11/20/chef-isaac-toups-has-the-recipe-to-bring-family-together/) |
-| Crawfish bisque | Brick | Dark chocolate | [Isaac Toups](https://gardenandgun.com/articles/how-to-make-a-roux/), [Louisiana Cookin'](https://louisianacookin.com/crawfish-bisque/) |
-| Duck & andouille gumbo | Dark chocolate | Black | [Emeril](https://www.foodnetwork.com/recipes/duck-and-andouille-sausage-gumbo-3644983) |
-| Rabbit sauce piquante | Dark chocolate | Peanut butter | [Jean-Paul Bourgeois](https://gardenandgun.com/recipe/classic-cajun-country-stew), [John Folse](https://www.wafb.com/story/6713604/chef-john-folses-seafood-sauce-piquant-st-james/) |
-| Chicken fricassée | Dark chocolate | Peanut butter | [Acadiana Table](https://acadianatable.com/cest-what-the-cajun-creole-dictionary/) |
-| Meatball stew | Dark chocolate | – | Marcelle Bienvenu ([The Advocate](https://www.theadvocate.com/baton_rouge/entertainment_life/marcelle-bienvenu-louisiana-ella-brennan-commanders-palace-emeril-lagasse/article_02bf1a3e-c5b0-4680-a913-8c1c3cdb0ae5.html)) |
-| Crab & shrimp stew | Dark chocolate | Peanut butter | [Marcelle Bienvenu via Louisiana Cookin'](https://louisianacookin.com/crab-and-shrimp-stew/) |
-| Shrimp & okra gumbo | Dark chocolate | Black | [Acadiana Table](https://acadianatable.com/2025/03/31/cajun-and-creole-whats-the-difference-and-which-is-the-true-louisiana-cuisine/) |
-| Backbone stew | Dark chocolate | – | [Acadiana Table](https://acadianatable.com/2025/03/17/backbone-stew/) |
-| Black-roux seafood gumbo | Black | Dark chocolate | [SFA: Seafood Palace](https://www.southernfoodways.org/interview/seafood-palace/), [SFA: Liuzza's by the Track](https://www.southernfoodways.org/interview/liuzzas-by-the-track/) |
+Researched 2026-09-23. Source wording was mapped to stages like this:
+white/blond → Blond; peanut butter, light brown, caramel → Peanut butter;
+copper penny, medium brown → Copper penny; milk chocolate, Hershey bar → Milk
+chocolate; dark red-brown, mahogany, brick → Brick; dark brown, dark chocolate
+→ Dark chocolate; black, nearly black → Black.
 
-## Contested
+| Dish | Stage | Recipe |
+| --- | --- | --- |
+| Creole crawfish étouffée | Blond | [John Folse · WAFB](https://www.wafb.com/story/6267150/chef-john-folses-louisiana-style-crawfish-etoufee/) |
+| Creamy crawfish bisque | Blond | [WAFB](https://www.wafb.com/story/26216515/creamy-crawfish-bisque/) |
+| Corn & crab bisque | Blond | [Emeril Lagasse](https://www.emerils.com/123393/louisiana-corn-and-crab-bisque) |
+| Oyster & artichoke bisque | Blond | [John Folse · FOX 8](https://www.fox8live.com/2018/09/12/chef-folse-oyster-artichoke-bisque/) |
+| Seafood au gratin | Blond | [John Folse · WAFB](https://www.wafb.com/story/398868/chef-john-folses-seafood-au-gratin/) |
+| Crawfish fettuccine | Blond | [The Speckled Palate](https://www.thespeckledpalate.com/crawfish-fettuccine/) |
+| Breaux Bridge étouffée | Peanut butter | [Explore Louisiana](https://www.explorelouisiana.com/culinary/recipes/crawfish-etouffee-recipe-and-instructional-video) |
+| NOLA shrimp étouffée | Peanut butter | [Emeril Lagasse](https://www.emerils.com/126622/shrimp-etouffee) |
+| Creole family gumbo | Peanut butter | [Serious Eats](https://www.seriouseats.com/creole-gumbo-recipe-11906420) |
+| City seafood gumbo | Peanut butter | [New Orleans Magazine](https://www.myneworleans.com/andouille-to-zherbes/) |
+| Roast duck gumbo | Peanut butter | [Southern Cast Iron](https://southerncastiron.com/duck-and-andouille-gumbo/) |
+| Cajun turtle piquante | Peanut butter | [Hank Shaw · Hunter Angler Gardener Cook](https://honest-food.net/turtle-sauce-piquante/) |
+| Acadian chicken piquante | Peanut butter | [Saveur](https://www.saveur.com/article/Recipes/Chicken-Sauce-Piquante) |
+| Mama’s chicken fricassée | Peanut butter | [John Folse](http://www.jfolse.com/recipes/poultry/chicken17.htm) |
+| Meatball stew | Peanut butter | [Magic Seasoning Blends](https://www.magicseasoningblends.com/recipes/meatball-stew/) |
+| Shrimp stew | Peanut butter | [Louisiana Cookin’](https://louisianacookin.com/shrimp-stew/) |
+| Grillades & rice grits | Peanut butter | [Louisiana Cookin’](https://louisianacookin.com/rice-grits-and-grillades/) |
+| New Orleans turtle soup | Peanut butter | [Hank Shaw · Hunter Angler Gardener Cook](https://honest-food.net/turtle-soup-recipe-creole/) |
+| Redfish courtbouillon | Peanut butter | [Rouses Markets](https://www.rouses.com/cooking/recipes/donny-rouses-redfish-court-bouillon/) |
+| Shrimp Creole | Peanut butter | [Explore Louisiana](https://www.explorelouisiana.com/culinary/recipes/oak-alleys-shrimp-creole-recipe) |
+| Shrimp & corn soup | Peanut butter | [Louisiana Kitchen & Culture](https://louisiana.kitchenandculture.com/recipes/louisiana-shrimp-and-corn-soup) |
+| Cajun seafood gumbo | Copper penny | [Donald Link · Leite’s Culinaria](https://leitesculinaria.com/78819/recipes-seafood-gumbo.html) |
+| Country filé gumbo | Copper penny | [Emeril Lagasse · Food Network](https://www.foodnetwork.com/recipes/emerils-country-file-gumbo-3644244) |
+| Seafood sauce piquante | Copper penny | [John Folse · Louisiana Kitchen & Culture](https://louisiana.kitchenandculture.com/recipes/louisiana-seafood-sauce-piquant) |
+| Sunday chicken fricassée | Copper penny | [John Folse](http://jfolse.com/stirrin/recipes/recipes2009/SIU_011709fricassee.htm) |
+| Easter crawfish bisque | Copper penny | [John Folse · Louisiana Cookin’](https://louisianacookin.com/a-taste-of-tradition-in-every-pot-of-crawfish-bisque/) |
+| River Road crawfish stew | Copper penny | [John Folse · WAFB](https://www.wafb.com/story/713777/chef-john-folses-river-road-crawfish-stew/) |
+| Creole turtle soup | Copper penny | [John Folse · Louisiana Cookin’](https://louisianacookin.com/creole-turtle-soup/) |
+| Catfish courtbouillon | Copper penny | [John Folse](http://jfolse.com/recipe_week/recipe0308/wafb_030108courtblln.html) |
+| Chicken & sausage gumbo | Milk chocolate | [Isaac Toups · NewOrleans.com](https://www.neworleans.com/blog/post/chef-isaac-toups-chicken-sausage-gumbo-with-cornbread/) |
+| Classic seafood gumbo | Milk chocolate | [Emeril Lagasse](https://www.emerils.com/126534/emerils-classic-seafood-gumbo) |
+| Rabbit sauce piquante | Milk chocolate | [Louisiana Cookin’](https://louisianacookin.com/rabbit-sauce-piquante/) |
+| Mamou meatball fricassée | Milk chocolate | [Acadiana Table](https://acadianatable.com/2022/01/17/cajun-meatball-fricassee/) |
+| Boucherie backbone stew | Milk chocolate | [Acadiana Table](https://acadianatable.com/2025/03/17/backbone-stew/) |
+| Houma courtbouillon | Milk chocolate | [Acadiana Table](https://acadianatable.com/2026/02/09/redfish-courtbouillon/) |
+| Flash-roux shrimp étouffée | Brick | [Magic Seasoning Blends](https://www.magicseasoningblends.com/recipes/shrimp-or-crawfish-etouffee-stew/) |
+| New Orleans gumbo ya-ya | Brick | [Mr. B’s Bistro · Country Roads](https://countryroadsmagazine.com/cuisine/recipes/mr-b-s-gumbo-ya-ya/) |
+| Flash-roux andouille gumbo | Brick | [Magic Seasoning Blends](https://www.magicseasoningblends.com/recipes/chicken-and-andouille-smoked-sausage-gumbo/) |
+| Gulf seafood couvillion | Brick | [Isaac Toups · Deep South](https://deepsouthmag.com/2019/11/20/chef-isaac-toups-has-the-recipe-to-bring-family-together/) |
+| Cajun crawfish étouffée | Dark chocolate | [Saveur](https://www.saveur.com/article/Recipes/Crawfish-Etouffee-1000079357/) |
+| Lake Charles chicken gumbo | Dark chocolate | [Saveur](https://www.saveur.com/article/recipes/fried-chicken-and-andouille-gumbo/) |
+| French Quarter okra gumbo | Dark chocolate | [Gumbo Shop](https://gumboshop.com/recipes/seafood-okra-gumbo/) |
+| Duck & andouille gumbo | Dark chocolate | [Louisiana Cookin’](https://louisianacookin.com/duck-andouille-gumbo/) |
+| Alligator sauce piquante | Dark chocolate | [Louisiana Seafood](https://www.louisianaseafood.com/recipe/alligator-sauce-piquante) |
+| Crab & shrimp stew | Dark chocolate | [Marcelle Bienvenu · Louisiana Cookin’](https://louisianacookin.com/crab-and-shrimp-stew/) |
+| Dad’s grillades | Dark chocolate | [Kelly English · Louisiana Kitchen & Culture](https://louisiana.kitchenandculture.com/recipes/kelly-english-s-dad-s-grillades) |
+| Shrimp & okra gumbo | Dark chocolate | [Louisiana Kitchen & Culture](https://louisiana.kitchenandculture.com/recipes/traditional-shrimp-and-okra-gumbo) |
+| Cajun duck-andouille gumbo | Black | [Mason Hereford · TODAY](https://www.today.com/recipes/duck-andouille-gumbo-recipe-t279858) |
+| Black-roux seafood gumbo | Black | [Seafood Palace · Southern Foodways](https://www.southernfoodways.org/interview/seafood-palace/) (interview) |
 
-Louisiana cooks genuinely disagree on these. That's part of the "war."
+## Judgment calls
 
-- **Étouffée** runs from white/blond (Folse, Link) to brown (Emeril, Leah Chase)
-  to dark red-brown (Prudhomme). Some cooks use no roux at all.
-- **Sauce piquante** is peanut butter for some (Link), dark brown for others (Folse, Bourgeois).
-- **Fricassée** is peanut butter (NolaCuisine) or dark (Acadiana Table).
-- **Chicken & sausage gumbo** runs from golden brown (Folse) to milk chocolate
-  (Toups, Bienvenu) to dark red-brown (Prudhomme) and dark brown (Link, Emeril).
-- **Seafood gumbo** runs from peanut butter to nearly black; Creole cooks tend
-  lighter, Cajun cooks darker.
-- **Black** is thin on purpose: no chef's recipe says "cook it to black," and
-  some sources call a black roux burned. It's the one-step-from-burnt expert target.
+- **John Folse's "dark brown"** sits at Copper penny. His own roux guide
+  defines dark brown as "light caramel… not as dark as chocolate." Taking his
+  words literally would move his five recipes to Dark chocolate.
+- **Acadiana Table's "dark roux"** (Mamou meatball fricassée, Boucherie
+  backbone stew, Houma courtbouillon) points to the site's own roux recipe,
+  which stops at "Hershey chocolate darkness," so those sit at Milk chocolate.
+- **Isaac Toups's "brick roux"** (Gulf seafood couvillion) gets its red from
+  tomato paste cooked into a blond roux, not from darker flour.
+- **Black** has one real recipe (a duck & andouille gumbo taken "one shade less
+  than black") and one oral history (a nearly-black restaurant seafood gumbo).
+  Some sources call a truly black roux burned. It's the rare expert target.
+- **Names**: a few recipe-title descriptors were plainer in the game ("Shrimp
+  Creole" instead of the source plantation's name; "Cajun seafood gumbo" for
+  Donald Link's *Real Cajun* recipe).
 
 ## Left out
 
-Jambalaya, red beans, maque choux, and dirty rice (no roux). Gumbo z'herbes,
-Leah Chase's Creole gumbo, turkey bone gumbo, and Prudhomme's chicken étouffée
-(no full trinity in the sourced recipes).
+- No roux (cornstarch, a flour slurry, or none): several étouffées, a crawfish
+  stew, chicken Creole and grillades from well-known restaurants, one okra gumbo.
+- Missing part of the trinity: every sourced gumbo z'herbes and Leah Chase's
+  Creole gumbo, several duck and seafood gumbos, Commander's Palace turtle
+  soup, several fricassées, étouffées, and grillades.
+- No color stated or conflicting instructions, and unvetted blogs.
+- Chicken Creole: no qualifying source with both a roux and the full trinity.

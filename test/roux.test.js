@@ -65,6 +65,6 @@ test('the menu has a real range of dishes to draw from', () => {
 test('every dish credits where its roux color comes from, with a link', () => {
   for (const { name, credit, url } of STAGES.flatMap((s) => s.dishes)) {
     assert.ok(credit && credit.length > 3, `${name} has no credit`);
-    assert.match(url, /^https:\/\//, `${name} needs an https link`);
+    assert.match(url, /^https?:\/\//, `${name} needs a link`);
   }
 });

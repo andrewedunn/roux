@@ -27,10 +27,10 @@ const pick = (rand, list) => list[Math.floor(rand() * list.length)];
 export function createMenu(seed) {
   const rand = seededRandom(seed);
   return TIERS.map(({ tier, stages }) => {
-    const name = pick(rand, stages);
-    const stage = STAGES.find((s) => s.name === name);
+    // Pick across every dish in the tier, so each dish is equally likely and thin stages stay rare.
+    const options = STAGES.filter((s) => stages.includes(s.name)).flatMap((stage) => stage.dishes.map((d) => ({ stage, d })));
+    const { stage, d } = pick(rand, options);
     const target = Math.min(DARKEST_TARGET, stage.at + (rand() * 2 - 1) * JITTER);
-    const { name: dish, credit, url, kind } = pick(rand, stage.dishes);
-    return { tier, stage, dish, source: { credit, url, kind }, target };
+    return { tier, stage, dish: d.name, source: { credit: d.credit, url: d.url, kind: d.kind }, target };
   });
 }

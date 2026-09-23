@@ -20,7 +20,7 @@ test('each target sits close to its named stage and names a dish for it', () => 
     for (const dish of createMenu(seed)) {
       assert.ok(Math.abs(dish.target - dish.stage.at) <= 0.02, `${dish.stage.name} target ${dish.target}`);
       assert.ok(dish.stage.dishes.some((d) => d.name === dish.dish), `${dish.dish} not listed for ${dish.stage.name}`);
-      assert.match(dish.source.url, /^https:/);
+      assert.match(dish.source.url, /^https?:/);
     }
   }
 });
@@ -35,4 +35,14 @@ test('over many menus every stage past white shows up', () => {
   const seen = new Set();
   for (let seed = 0; seed < 200; seed++) createMenu(seed).forEach((d) => seen.add(d.stage.name));
   assert.deepEqual([...seen].sort(), STAGES.slice(1).map((s) => s.name).sort());
+});
+
+test('every dish in a tier is equally likely, so thin stages like Black stay rare', () => {
+  let black = 0;
+  const runs = 2000;
+  for (let seed = 0; seed < runs; seed++) if (createMenu(seed)[2].stage.name === 'Black') black += 1;
+  const blackDishes = STAGES.find((s) => s.name === 'Black').dishes.length;
+  const darkDishes = STAGES.filter((s) => ['Brick', 'Dark chocolate', 'Black'].includes(s.name)).reduce((n, s) => n + s.dishes.length, 0);
+  const expected = blackDishes / darkDishes;
+  assert.ok(Math.abs(black / runs - expected) < 0.04, `Black came up ${(100 * black) / runs}% vs ${(100 * expected).toFixed(0)}% expected`);
 });

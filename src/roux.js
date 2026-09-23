@@ -2,7 +2,8 @@
 // ABOUTME: Hex values are estimates; dish pairings are sourced (docs/dishes.md); dark stages sit closer together.
 import { mixHex } from './color.js';
 
-// Dish pairings come from published Louisiana recipes; see docs/dishes.md for sources and the contested ones.
+// Each dish is a specific published recipe whose roux color it states. Where cooks disagree on a dish's
+// color, each version is its own dish. Sources and notes: docs/dishes.md.
 const dish = (name, credit, url, kind = 'recipe') => ({ name, credit, url, kind });
 
 export const STAGES = [
@@ -12,11 +13,12 @@ export const STAGES = [
     at: 0.16,
     hex: '#e0c38a',
     dishes: [
+      dish('Creole crawfish étouffée', 'John Folse · WAFB', 'https://www.wafb.com/story/6267150/chef-john-folses-louisiana-style-crawfish-etoufee/'),
+      dish('Creamy crawfish bisque', 'WAFB', 'https://www.wafb.com/story/26216515/creamy-crawfish-bisque/'),
       dish('Corn & crab bisque', 'Emeril Lagasse', 'https://www.emerils.com/123393/louisiana-corn-and-crab-bisque'),
       dish('Oyster & artichoke bisque', 'John Folse · FOX 8', 'https://www.fox8live.com/2018/09/12/chef-folse-oyster-artichoke-bisque/'),
       dish('Seafood au gratin', 'John Folse · WAFB', 'https://www.wafb.com/story/398868/chef-john-folses-seafood-au-gratin/'),
-      dish('Crawfish fettuccine', 'Louisiana Cookin’', 'https://louisianacookin.com/crawfish-fettuccini/'),
-      dish('Crawfish étouffée', 'John Folse · WAFB', 'https://www.wafb.com/story/6267150/chef-john-folses-louisiana-style-crawfish-etoufee/'),
+      dish('Crawfish fettuccine', 'The Speckled Palate', 'https://www.thespeckledpalate.com/crawfish-fettuccine/'),
     ],
   },
   {
@@ -24,21 +26,37 @@ export const STAGES = [
     at: 0.34,
     hex: '#c08a4e',
     dishes: [
-      dish('Shrimp étouffée', 'Emeril Lagasse', 'https://www.emerils.com/126622/shrimp-etouffee'),
-      dish('Shrimp Creole', 'Louisiana Cookin’', 'https://louisianacookin.com/shrimp-creole/'),
-      dish('Chicken Creole', 'John Folse · WAFB', 'https://www.wafb.com/2022/01/01/lite-flavorful-chicken-creole/'),
-      dish('Shrimp & corn soup', 'Donald Link · Real Cajun', 'https://www.ddvculinary.com/cookbooks_pdf/Real-Cajun.pdf'),
-      dish('Turtle soup', 'Commander’s Palace · Food Network', 'https://www.foodnetwork.com/recipes/turtle-soup-recipe-1951164'),
+      dish('Breaux Bridge étouffée', 'Explore Louisiana', 'https://www.explorelouisiana.com/culinary/recipes/crawfish-etouffee-recipe-and-instructional-video'),
+      dish('NOLA shrimp étouffée', 'Emeril Lagasse', 'https://www.emerils.com/126622/shrimp-etouffee'),
+      dish('Creole family gumbo', 'Serious Eats', 'https://www.seriouseats.com/creole-gumbo-recipe-11906420'),
+      dish('City seafood gumbo', 'New Orleans Magazine', 'https://www.myneworleans.com/andouille-to-zherbes/'),
+      dish('Roast duck gumbo', 'Southern Cast Iron', 'https://southerncastiron.com/duck-and-andouille-gumbo/'),
+      dish('Cajun turtle piquante', 'Hank Shaw · Hunter Angler Gardener Cook', 'https://honest-food.net/turtle-sauce-piquante/'),
+      dish('Acadian chicken piquante', 'Saveur', 'https://www.saveur.com/article/Recipes/Chicken-Sauce-Piquante'),
+      dish('Mama’s chicken fricassée', 'John Folse', 'http://www.jfolse.com/recipes/poultry/chicken17.htm'),
+      dish('Meatball stew', 'Magic Seasoning Blends', 'https://www.magicseasoningblends.com/recipes/meatball-stew/'),
       dish('Shrimp stew', 'Louisiana Cookin’', 'https://louisianacookin.com/shrimp-stew/'),
+      dish('Grillades & rice grits', 'Louisiana Cookin’', 'https://louisianacookin.com/rice-grits-and-grillades/'),
+      dish('New Orleans turtle soup', 'Hank Shaw · Hunter Angler Gardener Cook', 'https://honest-food.net/turtle-soup-recipe-creole/'),
+      dish('Redfish courtbouillon', 'Rouses Markets', 'https://www.rouses.com/cooking/recipes/donny-rouses-redfish-court-bouillon/'),
+      dish('Shrimp Creole', 'Explore Louisiana', 'https://www.explorelouisiana.com/culinary/recipes/oak-alleys-shrimp-creole-recipe'),
+      dish('Shrimp & corn soup', 'Louisiana Kitchen & Culture', 'https://louisiana.kitchenandculture.com/recipes/louisiana-shrimp-and-corn-soup'),
     ],
   },
   {
+    // John Folse's "dark brown" roux is lighter than chocolate by his own definition, so his recipes sit here.
     name: 'Copper penny',
     at: 0.52,
     hex: '#9e5b2e',
     dishes: [
-      dish('Crawfish stew', 'Real Cajun Recipes', 'https://www.realcajunrecipes.com/recipe/shrimp-or-crawfish-stew/'),
-      dish('Seafood gumbo', 'Donald Link · Real Cajun', 'https://www.ddvculinary.com/cookbooks_pdf/Real-Cajun.pdf'),
+      dish('Cajun seafood gumbo', 'Donald Link · Leite’s Culinaria', 'https://leitesculinaria.com/78819/recipes-seafood-gumbo.html'),
+      dish('Country filé gumbo', 'Emeril Lagasse · Food Network', 'https://www.foodnetwork.com/recipes/emerils-country-file-gumbo-3644244'),
+      dish('Seafood sauce piquante', 'John Folse · Louisiana Kitchen & Culture', 'https://louisiana.kitchenandculture.com/recipes/louisiana-seafood-sauce-piquant'),
+      dish('Sunday chicken fricassée', 'John Folse', 'http://jfolse.com/stirrin/recipes/recipes2009/SIU_011709fricassee.htm'),
+      dish('Easter crawfish bisque', 'John Folse · Louisiana Cookin’', 'https://louisianacookin.com/a-taste-of-tradition-in-every-pot-of-crawfish-bisque/'),
+      dish('River Road crawfish stew', 'John Folse · WAFB', 'https://www.wafb.com/story/713777/chef-john-folses-river-road-crawfish-stew/'),
+      dish('Creole turtle soup', 'John Folse · Louisiana Cookin’', 'https://louisianacookin.com/creole-turtle-soup/'),
+      dish('Catfish courtbouillon', 'John Folse', 'http://jfolse.com/recipe_week/recipe0308/wafb_030108courtblln.html'),
     ],
   },
   {
@@ -46,8 +64,12 @@ export const STAGES = [
     at: 0.67,
     hex: '#74462a',
     dishes: [
-      dish('Chicken & sausage gumbo', 'Isaac Toups · Deep South', 'https://deepsouthmag.com/2020/10/20/chef-isaac-toups-chicken-sausage-gumbo/'),
-      dish('Grillades & grits', 'America’s Test Kitchen', 'https://www.americastestkitchen.com/recipes/13442-slow-cooker-pork-grillades'),
+      dish('Chicken & sausage gumbo', 'Isaac Toups · NewOrleans.com', 'https://www.neworleans.com/blog/post/chef-isaac-toups-chicken-sausage-gumbo-with-cornbread/'),
+      dish('Classic seafood gumbo', 'Emeril Lagasse', 'https://www.emerils.com/126534/emerils-classic-seafood-gumbo'),
+      dish('Rabbit sauce piquante', 'Louisiana Cookin’', 'https://louisianacookin.com/rabbit-sauce-piquante/'),
+      dish('Mamou meatball fricassée', 'Acadiana Table', 'https://acadianatable.com/2022/01/17/cajun-meatball-fricassee/'),
+      dish('Boucherie backbone stew', 'Acadiana Table', 'https://acadianatable.com/2025/03/17/backbone-stew/'),
+      dish('Houma courtbouillon', 'Acadiana Table', 'https://acadianatable.com/2026/02/09/redfish-courtbouillon/'),
     ],
   },
   {
@@ -55,9 +77,10 @@ export const STAGES = [
     at: 0.79,
     hex: '#5e2e1c',
     dishes: [
-      dish('Gumbo ya-ya', 'Mr. B’s Bistro', 'https://www.mrbsbistro.com/recipes_gumbo.php'),
-      dish('Redfish courtbouillon', 'Isaac Toups · Deep South', 'https://deepsouthmag.com/2019/11/20/chef-isaac-toups-has-the-recipe-to-bring-family-together/'),
-      dish('Crawfish bisque', 'Isaac Toups · Garden & Gun', 'https://gardenandgun.com/articles/how-to-make-a-roux/', 'story'),
+      dish('Flash-roux shrimp étouffée', 'Magic Seasoning Blends', 'https://www.magicseasoningblends.com/recipes/shrimp-or-crawfish-etouffee-stew/'),
+      dish('New Orleans gumbo ya-ya', 'Mr. B’s Bistro · Country Roads', 'https://countryroadsmagazine.com/cuisine/recipes/mr-b-s-gumbo-ya-ya/'),
+      dish('Flash-roux andouille gumbo', 'Magic Seasoning Blends', 'https://www.magicseasoningblends.com/recipes/chicken-and-andouille-smoked-sausage-gumbo/'),
+      dish('Gulf seafood couvillion', 'Isaac Toups · Deep South', 'https://deepsouthmag.com/2019/11/20/chef-isaac-toups-has-the-recipe-to-bring-family-together/'),
     ],
   },
   {
@@ -65,13 +88,14 @@ export const STAGES = [
     at: 0.89,
     hex: '#45281a',
     dishes: [
-      dish('Duck & andouille gumbo', 'Emeril Lagasse · Food Network', 'https://www.foodnetwork.com/recipes/duck-and-andouille-sausage-gumbo-3644983'),
-      dish('Rabbit sauce piquante', 'Jean-Paul Bourgeois · Garden & Gun', 'https://gardenandgun.com/recipe/classic-cajun-country-stew'),
-      dish('Chicken fricassée', 'Acadiana Table', 'https://acadianatable.com/cest-what-the-cajun-creole-dictionary/', 'story'),
-      dish('Meatball stew', 'Acadiana Table', 'https://acadianatable.com/2022/01/17/cajun-meatball-fricassee/'),
+      dish('Cajun crawfish étouffée', 'Saveur', 'https://www.saveur.com/article/Recipes/Crawfish-Etouffee-1000079357/'),
+      dish('Lake Charles chicken gumbo', 'Saveur', 'https://www.saveur.com/article/recipes/fried-chicken-and-andouille-gumbo/'),
+      dish('French Quarter okra gumbo', 'Gumbo Shop', 'https://gumboshop.com/recipes/seafood-okra-gumbo/'),
+      dish('Duck & andouille gumbo', 'Louisiana Cookin’', 'https://louisianacookin.com/duck-andouille-gumbo/'),
+      dish('Alligator sauce piquante', 'Louisiana Seafood', 'https://www.louisianaseafood.com/recipe/alligator-sauce-piquante'),
       dish('Crab & shrimp stew', 'Marcelle Bienvenu · Louisiana Cookin’', 'https://louisianacookin.com/crab-and-shrimp-stew/'),
-      dish('Shrimp & okra gumbo', 'Acadiana Table', 'https://acadianatable.com/2025/03/31/cajun-and-creole-whats-the-difference-and-which-is-the-true-louisiana-cuisine/', 'story'),
-      dish('Backbone stew', 'Acadiana Table', 'https://acadianatable.com/2025/03/17/backbone-stew/'),
+      dish('Dad’s grillades', 'Kelly English · Louisiana Kitchen & Culture', 'https://louisiana.kitchenandculture.com/recipes/kelly-english-s-dad-s-grillades'),
+      dish('Shrimp & okra gumbo', 'Louisiana Kitchen & Culture', 'https://louisiana.kitchenandculture.com/recipes/traditional-shrimp-and-okra-gumbo'),
     ],
   },
   {
@@ -79,6 +103,7 @@ export const STAGES = [
     at: 0.97,
     hex: '#2b1a12',
     dishes: [
+      dish('Cajun duck-andouille gumbo', 'Mason Hereford · TODAY', 'https://www.today.com/recipes/duck-andouille-gumbo-recipe-t279858'),
       dish('Black-roux seafood gumbo', 'Seafood Palace · Southern Foodways', 'https://www.southernfoodways.org/interview/seafood-palace/', 'story'),
     ],
   },
