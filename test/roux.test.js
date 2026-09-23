@@ -48,3 +48,16 @@ test('every smell caption fits the one-line caption (27 characters)', () => {
     assert.ok(text.length <= 27, `"${text}" is ${text.length} characters`);
   }
 });
+
+test('every stage past white has dishes, and every dish name fits the ticket (26 characters)', () => {
+  for (const stage of STAGES.slice(1)) {
+    assert.ok(stage.dishes.length >= 1, `${stage.name} has no dishes`);
+    for (const dish of stage.dishes) assert.ok(dish.length <= 26, `"${dish}" is ${dish.length} characters`);
+  }
+});
+
+test('the menu has a real range of dishes to draw from', () => {
+  const all = STAGES.flatMap((s) => s.dishes);
+  assert.ok(all.length >= 25, `only ${all.length} dishes`);
+  assert.equal(new Set(all).size, all.length, 'no dish should appear twice');
+});
