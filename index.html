@@ -1,0 +1,75 @@
+<!doctype html>
+<!-- ABOUTME: Page shell for Roux Wars: title card, kitchen (target ticket, pot canvas, heat keys, action), result sheet. -->
+<!-- ABOUTME: Light-only on purpose: brown only reads as brown against lighter surroundings. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light" />
+    <meta name="darkreader-lock" />
+    <meta name="theme-color" content="#e5e6e1" />
+    <title>Roux Wars</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%2327496d'/%3E%3Ccircle cx='16' cy='16' r='11' fill='%239e5b2e'/%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Courier+Prime:wght@400;700&family=Ultra&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="kitchen" id="kitchen">
+      <header class="topbar">
+        <span class="wordmark">Roux Wars</span>
+        <span class="progress" id="progress"></span>
+        <button class="mute" id="mute" type="button" aria-pressed="false" aria-label="Mute sound">
+          <svg class="icon-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" /><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" fill="none" /></svg>
+          <svg class="icon-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" /><path d="M17 9.5l5 5M22 9.5l-5 5" fill="none" /></svg>
+        </button>
+      </header>
+
+      <section class="ticket" aria-label="Target roux">
+        <div class="chip-card">
+          <div class="chip" id="chip"></div>
+          <span class="chip-label">Match this</span>
+        </div>
+        <div class="ticket-text">
+          <p class="dish" id="dish"></p>
+          <p class="target" id="target"></p>
+        </div>
+      </section>
+
+      <div class="stove" id="stove">
+        <canvas id="pot" role="img" aria-label="Pot of roux. Drag in circles to stir."></canvas>
+      </div>
+
+      <p class="caption" id="caption" aria-live="polite"></p>
+
+      <div class="controls">
+        <div class="heat" role="group" aria-label="Heat">
+          <button type="button" data-heat="low" aria-pressed="false"><span class="lamp"></span>Low</button>
+          <button type="button" data-heat="med" aria-pressed="true"><span class="lamp"></span>Med</button>
+          <button type="button" data-heat="high" aria-pressed="false"><span class="lamp"></span>High</button>
+        </div>
+        <button type="button" class="action" id="action" data-kind="light">Light the burner</button>
+      </div>
+
+      <section class="sheet" id="sheet" hidden aria-live="polite"></section>
+    </main>
+
+    <section class="title" id="title">
+      <div class="title-inner">
+        <h1 class="logo"><span>Roux</span><span>Wars</span></h1>
+        <div class="stages" id="stages" aria-hidden="true"></div>
+        <p class="tagline">Cook the roux to the color on the card. Don’t burn it.</p>
+        <ul class="howto">
+          <li><b>Stir</b> in circles so it doesn’t stick.</li>
+          <li><b>Heat:</b> hotter is faster, and riskier.</li>
+          <li><b>Drop the trinity</b> to stop the cooking. It keeps darkening for a moment.</li>
+        </ul>
+        <button type="button" class="action" id="start">Start cooking</button>
+        <p class="keyhint">On a keyboard, hold S to stir.</p>
+      </div>
+    </section>
+
+    <script type="module" src="src/main.js"></script>
+  </body>
+</html>
