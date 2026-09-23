@@ -1,0 +1,14 @@
+.git
+.gitignore
+.assetsignore
+.claude
+.hallmark
+.wrangler
+.DS_Store
+node_modules
+test
+docs
+README.md
+package.json
+wrangler.jsonc
+worker.js

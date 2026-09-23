@@ -533,3 +533,68 @@ button:focus-visible {
     transition: none;
   }
 }
+
+/* Daily, practice, and sharing */
+
+.menu-label {
+  margin: 0 0 10px;
+  font-family: var(--type);
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+.challenge {
+  margin: 0 0 12px;
+  font-weight: 700;
+  font-size: 19px;
+}
+
+.secondary {
+  width: 100%;
+  height: 48px;
+  margin-top: 10px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1.5px;
+}
+
+.first-time {
+  margin: 4px 0 0;
+  text-align: center;
+  font-size: 15px;
+  color: var(--ink-2);
+}
+
+.note {
+  margin: 4px 0 0;
+  font-size: 17px;
+  color: var(--ink-2);
+}
+
+.sheet-actions {
+  margin-top: 16px;
+}
+
+.sheet-actions .action {
+  width: 100%;
+  margin-top: 0;
+}
+
+.share-text {
+  width: 100%;
+  margin-top: 14px;
+  padding: 10px;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  font-family: var(--type);
+  font-size: 14px;
+  resize: none;
+  -webkit-user-select: text;
+  user-select: text;
+}
