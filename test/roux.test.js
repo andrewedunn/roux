@@ -41,3 +41,10 @@ test('smell moves from raw flour to a warning as it darkens', () => {
   assert.match(smellAt(0.3), /toast/i);
   assert.match(smellAt(0.97), /careful/i);
 });
+
+test('every smell caption fits the one-line caption (27 characters)', () => {
+  for (let b = 0; b <= 1; b += 0.01) {
+    const text = smellAt(b);
+    assert.ok(text.length <= 27, `"${text}" is ${text.length} characters`);
+  }
+});
