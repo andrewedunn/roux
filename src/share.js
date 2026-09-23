@@ -6,7 +6,7 @@ const MAX_CHALLENGE = 300;
 export const DESCRIPTION = 'Cook three roux to the color on the card. Don’t burn it.';
 
 export function scoreBar({ score, burnt }) {
-  if (burnt) return '🔥'.repeat(BAR_LENGTH);
+  if (burnt) return '⬛'.repeat(BAR_LENGTH);
   const filled = Math.round(score / (100 / BAR_LENGTH));
   return '🟫'.repeat(filled) + '⬜'.repeat(BAR_LENGTH - filled);
 }

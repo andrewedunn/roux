@@ -22,7 +22,7 @@ const SMELLS = [
   { below: 0.45, text: 'Smells like toasted bread.' },
   { below: 0.62, text: 'Smells like roasting pecans.' },
   { below: 0.8, text: 'Smells deep and nutty.' },
-  { below: 0.93, text: 'Smells like dark-roast coffee.' },
+  { below: 0.93, text: 'Smells like coffee and chicory.' },
   { below: Infinity, text: 'Smells sharp. Careful.' },
 ];
 

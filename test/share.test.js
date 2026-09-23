@@ -12,8 +12,8 @@ test('the score bar fills a brown square per 20 points', () => {
   assert.equal(scoreBar(dish('x', 0)), '⬜⬜⬜⬜⬜');
 });
 
-test('a burnt dish shows fire', () => {
-  assert.equal(scoreBar(dish('x', 0, true)), '🔥🔥🔥🔥🔥');
+test('a burnt dish shows black squares, the end of the color ladder', () => {
+  assert.equal(scoreBar(dish('x', 0, true)), '⬛⬛⬛⬛⬛');
 });
 
 test('daily share text has a header, a line per dish, and a challenge link', () => {
@@ -28,7 +28,7 @@ test('daily share text has a header, a line per dish, and a challenge link', () 
       'Roux Wars #12 — 175/300',
       '🟫🟫🟫🟫🟫 94 Crawfish étouffée',
       '🟫🟫🟫🟫⬜ 81 Grillades and grits',
-      '🔥🔥🔥🔥🔥 Duck and andouille gumbo',
+      '⬛⬛⬛⬛⬛ Duck and andouille gumbo',
       'https://roux.dunn.us/?d=12&s=175',
     ].join('\n'),
   );

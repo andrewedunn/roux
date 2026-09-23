@@ -10,7 +10,7 @@ const SPOT_ON_DELTA = 0.015;
 const POINTS_PER_SPECK = 3;
 
 const VERDICTS = [
-  { min: 95, text: 'Spot on. That’s the one.' },
+  { min: 95, text: 'Ça c’est bon.' },
   { min: 85, text: 'Mawmaw would eat it.' },
   { min: 70, text: 'Close enough for a Tuesday.' },
   { min: 50, text: 'It’s a roux. Technically.' },
@@ -29,8 +29,8 @@ function missAmount(dE) {
 }
 
 function tipFor(direction, dE, secondsOff) {
-  if (direction === 'spot-on') return 'Right on the money.';
-  const when = secondsOff > 10 ? 'a lot' : `about ${secondsOff.toFixed(1)}s`;
+  if (direction === 'spot-on') return 'Pulled it right on time.';
+  const when = secondsOff > 10 ? 'a lot' : `about ${secondsOff.toFixed(1)}\u00a0s`;
   if (direction === 'dark') {
     return `${missAmount(dE)} dark. Pull it ${when} sooner — it keeps cooking after the trinity.`;
   }
@@ -80,10 +80,10 @@ export function scoreDish(targetBrowning, cook) {
 }
 
 const MENU_VERDICTS = [
-  { min: 270, text: 'Somebody enter you in a cook-off.' },
+  { min: 270, text: 'Somebody sign you up for the gumbo cook-off.' },
   { min: 225, text: 'The family’s coming back for seconds.' },
   { min: 150, text: 'Solid. Nobody’s complaining out loud.' },
-  { min: 75, text: 'Maybe order in tonight.' },
+  { min: 75, text: 'Might be a po-boy night.' },
   { min: 0, text: 'Mawmaw’s taking over the stove.' },
 ];
 
