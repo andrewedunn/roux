@@ -15,11 +15,18 @@ const $ = (id) => document.getElementById(id);
 const els = {
   title: $('title'),
   stages: $('stages'),
+  intro: $('intro'),
   menuLabel: $('menu-label'),
+  menuScore: $('menu-score'),
   challenge: $('challenge'),
   start: $('start'),
   practice: $('practice'),
-  firstTime: $('first-time'),
+  kitchen: $('kitchen'),
+  topbar: document.querySelector('.topbar'),
+  ticket: $('ticket'),
+  ticketNo: $('ticket-no'),
+  controls: $('controls'),
+  announce: $('announce'),
   progress: $('progress'),
   mute: $('mute'),
   chip: $('chip'),
@@ -70,6 +77,8 @@ const vibrate = (pattern) => {
 
 const randomSeed = () => (Math.random() * 2 ** 32) >>> 0;
 const menuName = (ref) => (ref.kind === 'daily' ? `#${ref.number}` : 'Practice');
+const menuTitle = (ref) =>
+  ref.kind === 'practice' ? 'Practice menu' : `${ref.number === today ? 'Today’s menu' : 'Menu'} #${ref.number}`;
 const sameMenu = (a, b) => a.kind === b.kind && (a.kind === 'daily' ? a.number === b.number : a.seed === b.seed);
 const totalOf = (dishes) => dishes.reduce((sum, d) => sum + d.score, 0);
 
@@ -94,13 +103,28 @@ function startDish() {
     pointerId: null,
   };
   renderer.reset();
-  els.progress.textContent = `${menuName(game.menuRef)} · Dish ${game.index + 1} of ${game.menu.length}`;
+  els.progress.textContent = `Dish ${game.index + 1} of ${game.menu.length}`;
+  els.ticketNo.textContent = menuName(game.menuRef);
   els.chip.style.background = rouxColor(dish.target);
   els.dish.textContent = dish.dish;
   els.target.textContent = `${dish.stage.name} roux`;
+  closeSheet();
+  setAction('Light the burner', 'light');
+}
+
+// While a sheet is up, the kitchen behind it is out of reach for Tab and screen readers.
+const behindSheet = () => [els.topbar, els.ticket, els.stove, els.caption, els.controls];
+
+function openSheet(announcement) {
+  els.sheet.hidden = false;
+  for (const el of behindSheet()) el.inert = true;
+  els.announce.textContent = announcement;
+}
+
+function closeSheet() {
   els.sheet.hidden = true;
   els.sheet.innerHTML = '';
-  setAction('Light the burner', 'light');
+  for (const el of behindSheet()) el.inert = false;
 }
 
 function setAction(label, kind) {
@@ -143,12 +167,12 @@ function showResult(r) {
       <figure><div class="swatch" style="background:${r.targetHex}"></div><figcaption>Target</figcaption></figure>
       <figure><div class="swatch${r.speckPenalty || r.burnt ? ' specked' : ''}" style="background-color:${r.finalHex}"></div><figcaption>Yours</figcaption></figure>
     </div>
-    <p class="score"><span class="num">${reduceMotion ? r.score : 0}</span><span class="of">/100</span></p>
+    <p class="score" aria-hidden="true"><span class="num">${reduceMotion ? r.score : 0}</span><span class="of">/100</span></p>
     <p class="verdict">${r.verdict}</p>
     <p class="tip">${r.tip}</p>
     ${r.speckPenalty ? `<p class="penalty">−${r.speckPenalty} for scorched bits</p>` : ''}
     <button type="button" class="action" id="next">${last ? 'See your menu' : 'Next dish'}</button>`;
-  els.sheet.hidden = false;
+  openSheet(`${r.score} out of 100. ${r.verdict} ${r.tip}`);
   countUp(els.sheet.querySelector('.num'), r.score);
   sound.result(r.score, r.burnt);
   const next = $('next');
@@ -193,28 +217,35 @@ function showSummary({ menuRef, dishes, challenge }) {
       (d) => `
       <li>
         <span class="pair"><i style="background:${d.targetHex}"></i><i style="background:${d.finalHex}"></i></span>
-        <span class="row-name">${d.dish}<small>${d.stage} roux</small></span>
-        <span class="row-pts">${d.burnt ? 'Burnt' : d.score}</span>
+        <span class="row-name">${d.dish}<small>${d.stage} roux${d.burnt ? ' · burnt' : ''}</small></span>
+        <span class="row-pts">${d.score}</span>
       </li>`,
     )
     .join('');
-  const notes = [];
-  if (challenge != null) notes.push(challengeLine(total, challenge));
+  // After a practice menu, point at today's daily if it hasn't been cooked yet.
+  const practice = { kind: 'practice', seed: randomSeed() };
+  let next = { label: 'Another practice menu', menu: practice };
+  if (menuRef.kind === 'daily') next = { label: 'Cook one for lagniappe', menu: practice };
+  else if (!store.dailies()[today]) next = { label: 'Cook today’s menu', menu: { kind: 'daily', number: today } };
+
+  // Coming from a challenge link, the head-to-head result is the headline.
+  const headline = challenge == null ? menuVerdict(total) : challengeLine(total, challenge);
+  const notes = challenge == null ? [] : [menuVerdict(total)];
   if (menuRef.kind === 'daily') {
     const days = streak(store.dailies(), today);
     if (days > 1) notes.push(`${days} days in a row.`);
   }
   els.sheet.innerHTML = `
-    <h2 class="menu-title">${menuRef.kind === 'daily' ? `Menu #${menuRef.number}` : 'Practice menu'}</h2>
+    <h2 class="menu-title">${menuTitle(menuRef)}</h2>
     <ol class="menu-rows">${rows}</ol>
-    <p class="score"><span class="num">${reduceMotion ? total : 0}</span><span class="of">/${dishes.length * 100}</span></p>
-    <p class="verdict">${menuVerdict(total)}</p>
+    <p class="score" aria-hidden="true"><span class="num">${reduceMotion ? total : 0}</span><span class="of">/${dishes.length * 100}</span></p>
+    <p class="verdict">${headline}</p>
     ${notes.map((n) => `<p class="note">${n}</p>`).join('')}
     <div class="sheet-actions">
       <button type="button" class="action" id="share">Share</button>
-      <button type="button" class="secondary" id="again">${menuRef.kind === 'daily' ? 'Practice a menu' : 'Another practice menu'}</button>
+      <button type="button" class="secondary" id="again">${next.label}</button>
     </div>`;
-  els.sheet.hidden = false;
+  openSheet(`${total} out of ${dishes.length * 100}. ${headline}`);
   countUp(els.sheet.querySelector('.num'), total);
   const shareButton = $('share');
   shareButton.addEventListener('click', () => shareMenu(menuRef, dishes, shareButton));
@@ -222,7 +253,7 @@ function showSummary({ menuRef, dishes, challenge }) {
     'click',
     () => {
       sound.click();
-      startMenu({ kind: 'practice', seed: randomSeed() });
+      startMenu(next.menu);
     },
     { once: true },
   );
@@ -270,6 +301,10 @@ function countUp(el, value) {
     el.textContent = value;
     return;
   }
+  // Reserve the final number's width so the "/100" beside it doesn't slide while counting.
+  el.textContent = value;
+  el.style.minWidth = `${el.getBoundingClientRect().width}px`;
+  el.textContent = 0;
   const start = performance.now();
   const duration = 650;
   const tick = (now) => {
@@ -292,16 +327,16 @@ function updateCaption() {
     text = hasStirred ? 'Light it when you’re ready.' : 'Try stirring in circles.';
   } else if (phase === 'cooking') {
     if (cook.stick > 0.55) {
-      text = 'It’s catching on the bottom. Stir!';
+      text = 'It’s catching. Stir!';
       tone = 'alarm';
     } else if (cook.stick > 0.3) {
-      text = 'Starting to stick. Keep stirring.';
+      text = 'Starting to stick. Stir.';
       tone = 'warn';
     } else {
       text = smellAt(cook.browning);
     }
   } else if (phase === 'cooling') {
-    text = 'Trinity’s in. It’s still cooking…';
+    text = 'Still darkening…';
   } else if (cook.status === 'burnt') {
     text = cook.burnReason === 'scorched' ? 'Scorched on the bottom.' : 'Smells burnt.';
     tone = 'warn';
@@ -443,37 +478,38 @@ const linkRecord = () => (link.kind === 'daily' ? store.dailies()[link.number] :
 
 function setupTitle() {
   const record = linkRecord();
-  const isToday = link.kind === 'daily' && link.number === today;
-  let label = link.kind === 'practice' ? 'A practice menu' : isToday ? `Today’s menu · #${today}` : `Menu #${link.number}`;
-  if (record) label += ` · you scored ${totalOf(record.dishes)}`;
-  els.menuLabel.textContent = label;
+  els.intro.hidden = store.hasPlayed();
+  els.menuLabel.textContent = menuTitle(linkMenu);
 
+  els.menuScore.hidden = !record;
+  if (record) els.menuScore.textContent = `You scored ${totalOf(record.dishes)}.`;
   els.challenge.hidden = link.challenge == null;
-  if (link.challenge != null) els.challenge.textContent = `Score to beat: ${link.challenge}`;
+  if (link.challenge != null) els.challenge.textContent = `Score to beat: ${link.challenge}.`;
 
   if (record) els.start.textContent = 'See how you did';
   else if (link.kind === 'practice') els.start.textContent = 'Cook this menu';
-  else els.start.textContent = isToday ? 'Cook today’s menu' : `Cook menu #${link.number}`;
-
-  els.firstTime.hidden = store.hasPlayed() || link.kind === 'practice' || Boolean(record);
+  else els.start.textContent = link.number === today ? 'Cook today’s menu' : `Cook menu #${link.number}`;
 }
 
-function leaveTitle() {
+// Nothing in the kitchen is reachable (or started) until the player picks a menu on the title card.
+function leaveTitle(menuRef) {
   sound.unlock();
   sound.click();
+  startMenu(menuRef);
   els.title.classList.add('gone');
+  els.title.inert = true;
+  els.kitchen.inert = false;
 }
 
 els.start.addEventListener('click', () => {
-  leaveTitle();
   const record = linkRecord();
+  leaveTitle(linkMenu);
   if (record) showSummary({ menuRef: linkMenu, dishes: record.dishes, challenge: link.challenge });
   else els.action.focus({ preventScroll: true });
 });
 
 els.practice.addEventListener('click', () => {
-  leaveTitle();
-  startMenu({ kind: 'practice', seed: randomSeed() });
+  leaveTitle({ kind: 'practice', seed: randomSeed() });
   els.action.focus({ preventScroll: true });
 });
 
@@ -485,5 +521,4 @@ new ResizeObserver(([entry]) => {
 els.stages.innerHTML = STAGES.map((s) => `<i style="background:${s.hex}"></i>`).join('');
 
 setupTitle();
-startMenu(linkMenu);
 requestAnimationFrame(frame);

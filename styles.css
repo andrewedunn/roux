@@ -1,22 +1,81 @@
-/* ABOUTME: Styles for Roux Wars: a light enamel stovetop, index-card ticket, result sheet. */
-/* ABOUTME: Mobile-first single column; no page scroll; the pot area takes all leftover height. */
+/* ABOUTME: Styles for Roux Wars: a light enamel stovetop, index-card ticket, result sheet, and title card. */
+/* ABOUTME: Mobile-first single column; every color, size, and easing comes from the tokens in :root. */
+/* Hallmark · scope: app (single-screen game) · theme: custom · vibe: "Louisiana home kitchen: enamel, index cards, roux"
+ * display: Ultra · body: Barlow Semi Condensed · card text: Courier Prime · anchor: enamel blue + bell-pepper green
+ * light-only on purpose: brown only reads as brown against lighter surroundings
+ * pre-emit critique: P5 H4 E4 S5 R5 V5 */
 
 :root {
+  /* Surfaces. Keep these near-neutral: they are what the roux color is judged against. */
   --range: #e5e6e1;
   --card: #fbfbf8;
+  --enamel: #efeeea;
+  --enamel-lip: #f6f5f2;
   --rule: #d4dfeb;
   --rule-red: #e3a39c;
-  --ink: #1d2126;
-  --ink-2: #585e66;
-  --pot: #27496d;
-  --pepper: #3d7a3a;
-  --pepper-deep: #2b5a29;
-  --flame: #e3632b;
-  --char: #9b3219;
 
+  /* Ink */
+  --ink: #1d2126;
+  --ink-hover: #30363e;
+  --ink-2: #585e66;
+  --ink-shadow: #07090b;
+  --on-dark: #ffffff;
+
+  /* Kitchen */
+  --pot: #27496d;
+  --pot-edge: #1a3350;
+  --grate: #a3a6a4;
+  --wood: #c4914f;
+  --wood-edge: #8e6230;
+  --speck: #140e0a;
+  --speck-rgb: 20, 14, 10;
+  --onion: #efe9d6;
+  --celery: #a9c77a;
+  --pepper: #3d7a3a;
+  --pepper-hover: #468a42;
+  --pepper-deep: #2b5a29;
+  --char: #9b3219;
+  --flame-outer: rgba(58, 104, 222, 0.85);
+  --flame-inner: rgba(176, 202, 255, 0.95);
+  --steam-rgb: 255, 255, 255;
+  --smoke-rgb: 88, 82, 76;
+
+  /* Shadows */
+  --shadow-card: 0 1px 0 rgba(0, 0, 0, 0.05), 0 10px 20px -14px rgba(0, 0, 0, 0.45);
+  --shadow-chip: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 2px 5px -2px rgba(0, 0, 0, 0.3);
+  --shadow-swatch: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+  --shadow-sheet: 0 -12px 32px -14px rgba(0, 0, 0, 0.4);
+  --shadow-strip: 0 2px 6px -3px rgba(0, 0, 0, 0.4);
+  --lift-ink: 0 4px 0 var(--ink-shadow), 0 10px 16px -10px rgba(0, 0, 0, 0.5);
+  --lift-pepper: 0 4px 0 var(--pepper-deep), 0 10px 16px -10px rgba(0, 0, 0, 0.5);
+
+  /* Type */
   --display: 'Ultra', 'Rockwell', Georgia, serif;
   --ui: 'Barlow Semi Condensed', 'Arial Narrow', system-ui, sans-serif;
   --type: 'Courier Prime', ui-monospace, 'Courier New', monospace;
+  --text-label: 13px;
+  --text-body: 17px;
+  --text-lead: 22px;
+  --text-score: 60px;
+  --text-logo: clamp(64px, 23vw, 108px);
+
+  /* Space and shape */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --radius-sm: 4px;
+  --radius-md: 12px;
+  --radius-lg: 22px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-press: 70ms;
+  --dur-fade: 200ms;
+  --dur-sheet: 360ms;
 
   color-scheme: light;
 }
@@ -32,11 +91,12 @@ body {
   background: var(--range);
   color: var(--ink);
   overscroll-behavior: none;
+  overflow-x: clip;
 }
 
 body {
   font-family: var(--ui);
-  font-size: 17px;
+  font-size: var(--text-body);
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
@@ -57,6 +117,15 @@ button:focus-visible {
   outline-offset: 3px;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
 /* Kitchen layout */
 
 .kitchen {
@@ -66,35 +135,40 @@ button:focus-visible {
   max-width: 480px;
   margin: 0 auto;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto auto minmax(0, 1fr) auto auto;
   gap: 10px;
-  padding: calc(env(safe-area-inset-top, 0px) + 8px) 16px calc(env(safe-area-inset-bottom, 0px) + 14px);
+  padding: calc(env(safe-area-inset-top, 0px) + var(--space-sm)) var(--space-lg)
+    calc(env(safe-area-inset-bottom, 0px) + 14px);
 }
 
 .topbar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  height: 40px;
+  gap: var(--space-md);
+  height: 44px;
 }
 
 .wordmark {
   font-family: var(--display);
-  font-size: 19px;
+  font-size: var(--text-lead);
+  white-space: nowrap;
 }
 
 .progress {
   margin-left: auto;
   font-weight: 600;
-  font-size: 14px;
+  font-size: var(--text-label);
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  white-space: nowrap;
   color: var(--ink-2);
 }
 
 .mute {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
+  margin-right: -10px;
   border: 0;
   border-radius: 50%;
   background: transparent;
@@ -124,61 +198,74 @@ button:focus-visible {
 /* Target ticket: a recipe index card with a paint chip clipped to it */
 
 .ticket {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 14px;
   padding: 10px 14px 10px 10px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background-color: var(--card);
   background-image: linear-gradient(var(--rule-red), var(--rule-red)),
     repeating-linear-gradient(to bottom, transparent 0 25px, var(--rule) 25px 26px);
   background-size: 100% 1.5px, 100% 100%;
   background-position: 0 22px, 0 22px;
   background-repeat: no-repeat;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05), 0 10px 20px -14px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--shadow-card);
 }
 
+.ticket-no {
+  position: absolute;
+  top: 3px;
+  right: 10px;
+  font-family: var(--type);
+  font-size: var(--text-label);
+  color: var(--ink-2);
+}
+
+/* The chip sits on the same enamel that rings the roux in the pot, so both are judged alike. */
 .chip-card {
   flex: none;
-  padding: 5px 5px 4px;
-  background: #fff;
+  padding: 5px 5px 3px;
+  background: var(--enamel);
   border-radius: 3px;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 2px 5px -2px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-chip);
   transform: rotate(-2deg);
   text-align: center;
 }
 
 .chip {
-  width: 72px;
+  width: 80px;
   height: 64px;
   border-radius: 2px;
 }
 
 .chip-label {
   display: block;
-  margin-top: 3px;
+  margin-top: 2px;
   font-family: var(--type);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: var(--text-label);
   color: var(--ink-2);
 }
 
 .ticket-text {
   min-width: 0;
+  padding-top: var(--space-sm);
 }
 
 .dish {
   margin: 0;
   font-family: var(--display);
-  font-size: 21px;
+  font-size: var(--text-lead);
   line-height: 1.1;
+  overflow-wrap: anywhere;
+  -webkit-hyphens: auto;
+  hyphens: auto;
 }
 
 .target {
   margin: 6px 0 0;
   font-family: var(--type);
-  font-size: 15px;
+  font-size: var(--text-label);
   color: var(--ink-2);
 }
 
@@ -198,12 +285,15 @@ button:focus-visible {
   touch-action: none;
 }
 
+/* One fixed line so the pot never resizes when the caption changes. Copy is kept to 27 characters. */
 .caption {
   margin: 0;
-  min-height: 1.4em;
+  height: 1.4em;
+  overflow: hidden;
+  white-space: nowrap;
   text-align: center;
   font-family: var(--type);
-  font-size: 15px;
+  font-size: var(--text-body);
   color: var(--ink-2);
 }
 
@@ -214,44 +304,41 @@ button:focus-visible {
 .caption.alarm {
   color: var(--char);
   font-weight: 700;
-  animation: pulse 0.5s ease-in-out infinite alternate;
+  animation: pulse 0.5s var(--ease-in-out) infinite alternate;
 }
 
-/* Controls */
+/* Buttons */
 
 .controls {
   display: grid;
-  gap: 12px;
+  gap: var(--space-md);
 }
 
-
-
-
-
-
-
 .action {
+  width: 100%;
   height: 60px;
   border: 0;
   border-radius: 14px;
-  color: #fff;
+  color: var(--on-dark);
   font-weight: 700;
-  font-size: 21px;
+  font-size: var(--text-lead);
   letter-spacing: 0.02em;
+  white-space: nowrap;
   background: var(--ink);
   transform: translateY(-3px);
-  box-shadow: 0 4px 0 #000, 0 10px 16px -10px rgba(0, 0, 0, 0.5);
-  transition: transform 0.07s, box-shadow 0.07s, background-color 0.2s;
+  box-shadow: var(--lift-ink);
+  transition: transform var(--dur-press) var(--ease-out), box-shadow var(--dur-press) var(--ease-out),
+    background-color var(--dur-fade) var(--ease-out);
 }
 
 .action:active {
   transform: translateY(1px);
-  box-shadow: 0 0 0 #000;
+  box-shadow: 0 0 0 var(--ink-shadow);
 }
 
 .action[data-kind='trinity'] {
   background: var(--pepper);
-  box-shadow: 0 4px 0 var(--pepper-deep), 0 10px 16px -10px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--lift-pepper);
 }
 
 .action[data-kind='trinity']:active {
@@ -259,13 +346,47 @@ button:focus-visible {
 }
 
 .action[data-kind='wait'] {
-  background: #8b9096;
+  background: var(--ink-2);
   transform: none;
   box-shadow: none;
   cursor: default;
 }
 
-/* Result sheet */
+.secondary {
+  width: 100%;
+  height: 48px;
+  margin-top: 10px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  font-weight: 700;
+  font-size: var(--text-body);
+  white-space: nowrap;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1.5px;
+}
+
+@media (hover: hover) {
+  .action:hover {
+    background: var(--ink-hover);
+  }
+  .action[data-kind='trinity']:hover {
+    background: var(--pepper-hover);
+  }
+  .action[data-kind='wait']:hover {
+    background: var(--ink-2);
+  }
+  .secondary:hover {
+    text-decoration-thickness: 3px;
+  }
+  .mute:hover {
+    color: var(--ink);
+  }
+}
+
+/* Result and menu sheets */
 
 .sheet {
   position: absolute;
@@ -273,11 +394,14 @@ button:focus-visible {
   right: 0;
   bottom: 0;
   z-index: 2;
-  padding: 18px 18px calc(env(safe-area-inset-bottom, 0px) + 16px);
-  border-radius: 22px 22px 0 0;
+  max-height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 18px 18px calc(env(safe-area-inset-bottom, 0px) + var(--space-lg));
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   background: var(--card);
-  box-shadow: 0 -12px 32px -14px rgba(0, 0, 0, 0.4);
-  animation: rise 0.36s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: var(--shadow-sheet);
+  animation: rise var(--dur-sheet) var(--ease-out);
 }
 
 .sheet[hidden] {
@@ -286,7 +410,7 @@ button:focus-visible {
 
 .swatches {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -296,13 +420,13 @@ button:focus-visible {
 
 .swatch {
   height: 80px;
-  border-radius: 4px;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-swatch);
 }
 
 .swatch.specked {
-  background-image: radial-gradient(circle, #140e0a 0 1.6px, transparent 2.2px),
-    radial-gradient(circle, #140e0a 0 1.1px, transparent 1.7px);
+  background-image: radial-gradient(circle, var(--speck) 0 1.6px, transparent 2.2px),
+    radial-gradient(circle, var(--speck) 0 1.1px, transparent 1.7px);
   background-size: 29px 23px, 37px 31px;
   background-position: 4px 6px, 17px 13px;
 }
@@ -310,9 +434,7 @@ button:focus-visible {
 .swatches figcaption {
   margin-top: 6px;
   font-family: var(--type);
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: var(--text-label);
   color: var(--ink-2);
 }
 
@@ -324,40 +446,41 @@ button:focus-visible {
 }
 
 .score .num {
+  display: inline-block;
   font-family: var(--display);
-  font-size: 60px;
+  font-size: var(--text-score);
   line-height: 0.9;
 }
 
 .score .of {
-  font-size: 20px;
+  font-size: var(--text-lead);
   font-weight: 600;
   color: var(--ink-2);
 }
 
 .verdict {
   margin: 10px 0 0;
-  font-size: 23px;
+  font-size: var(--text-lead);
   font-weight: 700;
   line-height: 1.15;
 }
 
-.tip {
+.tip,
+.note {
   margin: 6px 0 0;
-  font-size: 18px;
+  font-size: var(--text-body);
   line-height: 1.3;
   color: var(--ink-2);
 }
 
 .penalty {
-  margin: 8px 0 0;
-  font-family: var(--type);
-  font-size: 14px;
+  margin: var(--space-sm) 0 0;
+  font-size: var(--text-body);
   color: var(--char);
 }
 
-.sheet .action {
-  width: 100%;
+.sheet > .action,
+.sheet-actions {
   margin-top: 18px;
 }
 
@@ -365,7 +488,7 @@ button:focus-visible {
   margin: 0 0 10px;
   font-family: var(--display);
   font-weight: 400;
-  font-size: 24px;
+  font-size: var(--text-lead);
 }
 
 .menu-rows {
@@ -376,9 +499,9 @@ button:focus-visible {
 
 .menu-rows li {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-md);
   padding: 10px 0;
   border-bottom: 1px solid var(--rule);
 }
@@ -390,7 +513,7 @@ button:focus-visible {
 .pair i {
   width: 30px;
   height: 36px;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-swatch);
 }
 
 .pair i:first-child {
@@ -403,21 +526,35 @@ button:focus-visible {
 
 .row-name {
   font-weight: 700;
-  font-size: 17px;
+  font-size: var(--text-body);
   line-height: 1.15;
+  overflow-wrap: anywhere;
 }
 
 .row-name small {
   display: block;
   font-family: var(--type);
   font-weight: 400;
-  font-size: 13px;
+  font-size: var(--text-label);
   color: var(--ink-2);
 }
 
 .row-pts {
   font-family: var(--display);
-  font-size: 22px;
+  font-size: var(--text-lead);
+}
+
+.share-text {
+  width: 100%;
+  margin-top: 14px;
+  padding: 10px;
+  border: 1px solid var(--rule);
+  border-radius: var(--space-sm);
+  font-family: var(--ui);
+  font-size: var(--text-body);
+  resize: none;
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 /* Title card */
@@ -426,11 +563,14 @@ button:focus-visible {
   position: fixed;
   inset: 0;
   z-index: 5;
-  display: grid;
-  place-items: center;
-  padding: calc(env(safe-area-inset-top, 0px) + 24px) 24px calc(env(safe-area-inset-bottom, 0px) + 24px);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: calc(env(safe-area-inset-top, 0px) + var(--space-xl)) var(--space-xl)
+    calc(env(safe-area-inset-bottom, 0px) + var(--space-xl));
   background: var(--range);
-  transition: opacity 0.35s, visibility 0.35s;
+  transition: opacity var(--dur-sheet) var(--ease-out), visibility var(--dur-sheet) var(--ease-out);
 }
 
 .title.gone {
@@ -441,6 +581,7 @@ button:focus-visible {
 .title-inner {
   width: 100%;
   max-width: 420px;
+  margin: auto;
 }
 
 .logo {
@@ -449,34 +590,44 @@ button:focus-visible {
   flex-direction: column;
   font-family: var(--display);
   font-weight: 400;
-  font-size: clamp(64px, 23vw, 108px);
+  font-size: var(--text-logo);
   line-height: 0.86;
 }
 
 .stages {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
+  grid-template-columns: repeat(8, minmax(0, 1fr));
   height: 30px;
   margin: 20px 0 22px;
   border-radius: 3px;
   overflow: hidden;
-  box-shadow: 0 2px 6px -3px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-strip);
 }
 
-.tagline {
-  margin: 0 0 14px;
-  font-size: 23px;
+.intro {
+  margin-bottom: 22px;
+}
+
+.lead {
+  margin: 0;
+  font-size: var(--text-lead);
   font-weight: 700;
   line-height: 1.2;
 }
 
+.tagline {
+  margin: 4px 0 10px;
+  font-size: var(--text-body);
+  line-height: 1.3;
+}
+
 .howto {
   display: grid;
-  gap: 6px;
-  margin: 0 0 26px;
+  gap: var(--space-xs);
+  margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 18px;
+  font-size: var(--text-body);
   line-height: 1.3;
   color: var(--ink-2);
 }
@@ -485,15 +636,26 @@ button:focus-visible {
   color: var(--ink);
 }
 
-#start {
-  width: 100%;
+.menu-label {
+  margin: 0;
+  font-size: var(--text-lead);
+  font-weight: 700;
+}
+
+.menu-status {
+  margin: 2px 0 0;
+  font-size: var(--text-body);
+  color: var(--ink-2);
+}
+
+.title .action {
+  margin-top: var(--space-lg);
 }
 
 .keyhint {
-  margin: 14px 0 0;
+  margin: 6px 0 0;
   text-align: center;
-  font-family: var(--type);
-  font-size: 13px;
+  font-size: var(--text-label);
   color: var(--ink-2);
 }
 
@@ -523,7 +685,7 @@ button:focus-visible {
 
 @media (prefers-reduced-motion: reduce) {
   .sheet {
-    animation: fade 0.2s;
+    animation: fade 150ms var(--ease-out);
   }
   .caption.alarm {
     animation: none;
@@ -532,69 +694,4 @@ button:focus-visible {
   .action {
     transition: none;
   }
-}
-
-/* Daily, practice, and sharing */
-
-.menu-label {
-  margin: 0 0 10px;
-  font-family: var(--type);
-  font-size: 14px;
-  color: var(--ink-2);
-}
-
-.challenge {
-  margin: 0 0 12px;
-  font-weight: 700;
-  font-size: 19px;
-}
-
-.secondary {
-  width: 100%;
-  height: 48px;
-  margin-top: 10px;
-  border: 0;
-  border-radius: 12px;
-  background: transparent;
-  font-weight: 700;
-  font-size: 18px;
-  color: var(--ink);
-  text-decoration: underline;
-  text-underline-offset: 4px;
-  text-decoration-thickness: 1.5px;
-}
-
-.first-time {
-  margin: 4px 0 0;
-  text-align: center;
-  font-size: 15px;
-  color: var(--ink-2);
-}
-
-.note {
-  margin: 4px 0 0;
-  font-size: 17px;
-  color: var(--ink-2);
-}
-
-.sheet-actions {
-  margin-top: 16px;
-}
-
-.sheet-actions .action {
-  width: 100%;
-  margin-top: 0;
-}
-
-.share-text {
-  width: 100%;
-  margin-top: 14px;
-  padding: 10px;
-  border: 1px solid var(--rule);
-  border-radius: 8px;
-  font-family: var(--type);
-  font-size: 14px;
-  resize: none;
-  -webkit-user-select: text;
-  user-select: text;
 }

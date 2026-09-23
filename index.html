@@ -26,7 +26,7 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main class="kitchen" id="kitchen">
+    <main class="kitchen" id="kitchen" inert>
       <header class="topbar">
         <span class="wordmark">Roux Wars</span>
         <span class="progress" id="progress"></span>
@@ -36,7 +36,8 @@
         </button>
       </header>
 
-      <section class="ticket" aria-label="Target roux">
+      <section class="ticket" id="ticket" aria-label="Target roux">
+        <span class="ticket-no" id="ticket-no"></span>
         <div class="chip-card">
           <div class="chip" id="chip"></div>
           <span class="chip-label">Match this</span>
@@ -53,27 +54,31 @@
 
       <p class="caption" id="caption" aria-live="polite"></p>
 
-      <div class="controls">
+      <div class="controls" id="controls">
         <button type="button" class="action" id="action" data-kind="light">Light the burner</button>
       </div>
 
-      <section class="sheet" id="sheet" hidden aria-live="polite"></section>
+      <section class="sheet" id="sheet" hidden></section>
+      <p class="sr-only" id="announce" aria-live="polite"></p>
     </main>
 
     <section class="title" id="title">
       <div class="title-inner">
         <h1 class="logo"><span>Roux</span><span>Wars</span></h1>
         <div class="stages" id="stages" aria-hidden="true"></div>
-        <p class="tagline">Cook the roux to the color on the card. Don’t burn it.</p>
-        <ul class="howto">
-          <li><b>Stir</b> in circles so it doesn’t stick.</li>
-          <li><b>Drop the trinity</b> to stop the cooking. It keeps darkening for a moment.</li>
-        </ul>
+        <div class="intro" id="intro" hidden>
+          <p class="lead">First you make a roux.</p>
+          <p class="tagline">Cook it to the color on the card. Don’t burn it.</p>
+          <ul class="howto">
+            <li><b>Stir</b> in circles so it doesn’t stick.</li>
+            <li><b>Drop the trinity</b> to stop the cooking. It keeps darkening for a moment.</li>
+          </ul>
+        </div>
         <p class="menu-label" id="menu-label"></p>
-        <p class="challenge" id="challenge" hidden></p>
+        <p class="menu-status" id="menu-score" hidden></p>
+        <p class="menu-status" id="challenge" hidden></p>
         <button type="button" class="action" id="start">Cook today’s menu</button>
-        <button type="button" class="secondary" id="practice">Practice</button>
-        <p class="first-time" id="first-time" hidden>First time? Try a practice menu before the daily.</p>
+        <button type="button" class="secondary" id="practice">Cook a practice menu</button>
         <p class="keyhint">On a keyboard, hold S to stir.</p>
       </div>
     </section>

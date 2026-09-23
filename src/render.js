@@ -2,24 +2,38 @@
 // ABOUTME: Everything is drawn from a view object each frame; particles live here because they are purely visual.
 import { mixHex } from './color.js';
 
-const POT = '#27496d';
-const POT_EDGE = '#1a3350';
-const ENAMEL_SHADOW = '#d6cfc1';
-const ENAMEL = '#efeae0';
-const ENAMEL_LIP = '#f5f2eb';
-const GRATE = '#a3a6a4';
-const WOOD = '#c4914f';
-const WOOD_EDGE = '#8e6230';
-const SPECK = '#140e0a';
-// Onion, celery, bell pepper: the classic 2:1:1.
-const TRINITY_COLORS = ['#efe9d6', '#efe9d6', '#a9c77a', '#4e8b3a'];
 const FLAME_LEVEL = 0.65;
+
+// Canvas colors come from the same CSS tokens as the rest of the page (styles.css :root).
+function readPalette() {
+  const css = getComputedStyle(document.documentElement);
+  const token = (name) => css.getPropertyValue(name).trim();
+  return {
+    pot: token('--pot'),
+    potEdge: token('--pot-edge'),
+    enamel: token('--enamel'),
+    enamelLip: token('--enamel-lip'),
+    grate: token('--grate'),
+    wood: token('--wood'),
+    woodEdge: token('--wood-edge'),
+    speck: token('--speck'),
+    speckRgb: token('--speck-rgb'),
+    ink: token('--ink'),
+    flameOuter: token('--flame-outer'),
+    flameInner: token('--flame-inner'),
+    steamRgb: token('--steam-rgb'),
+    smokeRgb: token('--smoke-rgb'),
+    // Onion, celery, bell pepper: the classic 2:1:1.
+    trinity: [token('--onion'), token('--onion'), token('--celery'), token('--pepper')],
+  };
+}
 
 const frac = (x) => x - Math.floor(x);
 
 export function createPotRenderer(canvas) {
   const ctx = canvas.getContext('2d');
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const C = readPalette();
   let w = 0;
   let h = 0;
   let flame = 0;
@@ -62,7 +76,7 @@ export function createPotRenderer(canvas) {
       th: Math.random() * Math.PI * 2,
       size: R * (0.034 + Math.random() * 0.02),
       rot: Math.random() * Math.PI,
-      color: TRINITY_COLORS[Math.floor(Math.random() * TRINITY_COLORS.length)],
+      color: C.trinity[Math.floor(Math.random() * C.trinity.length)],
       delay: Math.random() * 0.16,
     }));
     for (let i = 0; i < 16; i++) addPuff('steam', R * 0.8 * Math.sqrt(Math.random()), Math.random() * Math.PI * 2, now, R);
@@ -82,7 +96,7 @@ export function createPotRenderer(canvas) {
   }
 
   function drawGrate(S) {
-    ctx.strokeStyle = GRATE;
+    ctx.strokeStyle = C.grate;
     ctx.lineWidth = S * 0.022;
     ctx.lineCap = 'round';
     for (let i = 0; i < 4; i++) {
@@ -103,8 +117,8 @@ export function createPotRenderer(canvas) {
       const len = S * (0.012 + 0.05 * flame) * flick;
       const base = Ro * 0.96;
       for (const [scale, color] of [
-        [1, 'rgba(58, 104, 222, 0.85)'],
-        [0.55, 'rgba(176, 202, 255, 0.95)'],
+        [1, C.flameOuter],
+        [0.55, C.flameInner],
       ]) {
         const spread = 0.075 * scale;
         const tip = base + len * scale + Ro * 0.04;
@@ -124,9 +138,9 @@ export function createPotRenderer(canvas) {
       ctx.beginPath();
       ctx.roundRect(x - Ro * 0.1, -Ro * 0.2, Ro * 0.2, Ro * 0.4, Ro * 0.07);
       ctx.roundRect(x - Ro * 0.035 + side * Ro * 0.02, -Ro * 0.12, Ro * 0.07, Ro * 0.24, Ro * 0.035);
-      ctx.fillStyle = POT;
+      ctx.fillStyle = C.pot;
       ctx.fill('evenodd');
-      ctx.strokeStyle = POT_EDGE;
+      ctx.strokeStyle = C.potEdge;
       ctx.lineWidth = 1.5;
       ctx.stroke();
     }
@@ -135,25 +149,24 @@ export function createPotRenderer(canvas) {
   function drawPotBody(Ro, Rw) {
     ctx.beginPath();
     ctx.arc(0, 0, Ro, 0, Math.PI * 2);
-    ctx.fillStyle = POT;
+    ctx.fillStyle = C.pot;
     ctx.fill();
-    ctx.strokeStyle = POT_EDGE;
+    ctx.strokeStyle = C.potEdge;
     ctx.lineWidth = 1.5;
     ctx.stroke();
     ctx.beginPath();
     ctx.arc(0, 0, (Ro + Rw) / 2, Math.PI * 1.08, Math.PI * 1.55);
-    ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+    ctx.strokeStyle = `rgba(${C.steamRgb}, 0.22)`;
     ctx.lineWidth = (Ro - Rw) * 0.35;
     ctx.lineCap = 'round';
     ctx.stroke();
   }
 
-  // The light enamel wall is the roux's immediate surround, so brown reads as brown.
+  // The enamel wall is the roux's immediate surround. It matches the target chip's mount so both are judged alike.
   function drawWall(Rw, R) {
     const g = ctx.createRadialGradient(0, 0, R, 0, 0, Rw);
-    g.addColorStop(0, ENAMEL_SHADOW);
-    g.addColorStop(0.3, ENAMEL);
-    g.addColorStop(1, ENAMEL_LIP);
+    g.addColorStop(0, C.enamel);
+    g.addColorStop(1, C.enamelLip);
     ctx.beginPath();
     ctx.arc(0, 0, Rw, 0, Math.PI * 2);
     ctx.fillStyle = g;
@@ -241,7 +254,7 @@ export function createPotRenderer(canvas) {
 
     // Scorched specks: placed on a golden-angle spiral near the edges, where a pot catches first.
     const specks = Math.min(60, Math.floor(v.specks));
-    ctx.fillStyle = SPECK;
+    ctx.fillStyle = C.speck;
     for (let i = 0; i < specks; i++) {
       const r = R * (0.5 + 0.45 * frac(i * 0.618034 + 0.13));
       const th = i * 2.39996 + 0.7 + swirlAt(r);
@@ -255,7 +268,7 @@ export function createPotRenderer(canvas) {
       for (const p of trinity) {
         const t = Math.min(1, Math.max(0, (now - dropAt - p.delay) / 0.22));
         if (t <= 0) continue;
-        const scale = 1 + 0.9 * (1 - t) ** 2;
+        const scale = reduceMotion ? 1 : 1 + 0.9 * (1 - t) ** 2;
         const th = p.th + swirlAt(p.r);
         ctx.save();
         ctx.translate(Math.cos(th) * p.r, Math.sin(th) * p.r);
@@ -271,8 +284,8 @@ export function createPotRenderer(canvas) {
 
     // Oil sheen, kept faint so it doesn't lighten the color you're judging.
     const sheen = ctx.createRadialGradient(-R * 0.38, -R * 0.42, 0, -R * 0.38, -R * 0.42, R * 0.6);
-    sheen.addColorStop(0, 'rgba(255,255,255,0.09)');
-    sheen.addColorStop(1, 'rgba(255,255,255,0)');
+    sheen.addColorStop(0, `rgba(${C.steamRgb}, 0.09)`);
+    sheen.addColorStop(1, `rgba(${C.steamRgb}, 0)`);
     ctx.fillStyle = sheen;
     ctx.fillRect(-R, -R, R * 2, R * 2);
 
@@ -281,7 +294,7 @@ export function createPotRenderer(canvas) {
       const a = (v.stick - 0.3) / 0.7;
       ctx.beginPath();
       ctx.arc(0, 0, R, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(26, 16, 10, ${0.55 * a})`;
+      ctx.strokeStyle = `rgba(${C.speckRgb}, ${0.55 * a})`;
       ctx.lineWidth = R * 0.16 * a;
       ctx.stroke();
     }
@@ -289,7 +302,7 @@ export function createPotRenderer(canvas) {
     // Meniscus where the roux meets the wall.
     ctx.beginPath();
     ctx.arc(0, 0, R, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(0,0,0,0.16)';
+    ctx.strokeStyle = `rgba(${C.speckRgb}, 0.1)`;
     ctx.lineWidth = R * 0.04;
     ctx.stroke();
     ctx.restore();
@@ -310,7 +323,7 @@ export function createPotRenderer(canvas) {
       p.x += p.vx * dt;
       p.y += p.vy * dt;
       const radius = p.size * (1 + age * 1.4);
-      const rgb = p.kind === 'steam' ? '255, 255, 255' : '88, 82, 76';
+      const rgb = p.kind === 'steam' ? C.steamRgb : C.smokeRgb;
       const alpha = (p.kind === 'steam' ? 0.5 : 0.36) * (1 - age);
       const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, radius);
       g.addColorStop(0, `rgba(${rgb}, ${alpha})`);
@@ -322,6 +335,7 @@ export function createPotRenderer(canvas) {
     }
   }
 
+  // A flat-ended wooden roux paddle: the straight edge is what scrapes the bottom clean.
   function drawSpoon(v, R, S, color) {
     let x;
     let y;
@@ -330,43 +344,47 @@ export function createPotRenderer(canvas) {
       y = v.spoon.y;
       const d = Math.hypot(x, y);
       if (d > R * 0.1) spoonAngle = Math.atan2(y, x);
-      const max = R * 0.86;
+      const max = R * 0.84;
       if (d > max) {
         x = (x / d) * max;
         y = (y / d) * max;
       }
     } else {
-      x = Math.cos(spoonAngle) * R * 0.74;
-      y = Math.sin(spoonAngle) * R * 0.74;
+      x = Math.cos(spoonAngle) * R * 0.72;
+      y = Math.sin(spoonAngle) * R * 0.72;
     }
     const ux = Math.cos(spoonAngle);
     const uy = Math.sin(spoonAngle);
-    const hx0 = x + ux * R * 0.1;
-    const hy0 = y + uy * R * 0.1;
+    const bladeBack = R * 0.14;
+    const hx0 = x + ux * bladeBack;
+    const hy0 = y + uy * bladeBack;
     const reach = S * 0.36;
     ctx.lineCap = 'round';
-    ctx.strokeStyle = WOOD_EDGE;
+    ctx.strokeStyle = C.woodEdge;
     ctx.lineWidth = R * 0.06;
     ctx.beginPath();
     ctx.moveTo(hx0, hy0);
     ctx.lineTo(hx0 + ux * reach, hy0 + uy * reach);
     ctx.stroke();
-    ctx.strokeStyle = WOOD;
+    ctx.strokeStyle = C.wood;
     ctx.lineWidth = R * 0.045;
     ctx.stroke();
 
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(spoonAngle);
+    const bladeFront = -R * 0.12;
+    const half = R * 0.075;
     ctx.beginPath();
-    ctx.ellipse(0, 0, R * 0.13, R * 0.09, 0, 0, Math.PI * 2);
-    ctx.fillStyle = WOOD;
+    ctx.roundRect(bladeFront, -half, bladeBack - bladeFront, half * 2, R * 0.018);
+    ctx.fillStyle = C.wood;
     ctx.fill();
-    ctx.strokeStyle = WOOD_EDGE;
+    ctx.strokeStyle = C.woodEdge;
     ctx.lineWidth = 1.5;
     ctx.stroke();
+    // Roux coats the leading edge.
     ctx.beginPath();
-    ctx.ellipse(-R * 0.01, 0, R * 0.1, R * 0.065, 0, 0, Math.PI * 2);
+    ctx.roundRect(bladeFront + 1, -half + 1, R * 0.08, half * 2 - 2, R * 0.014);
     ctx.fillStyle = color;
     ctx.fill();
     ctx.restore();
@@ -377,9 +395,9 @@ export function createPotRenderer(canvas) {
     const a0 = -Math.PI * 0.85;
     const a1 = Math.PI * 0.45;
     ctx.save();
-    ctx.globalAlpha = 0.55 + 0.2 * Math.sin(now * 3);
-    ctx.strokeStyle = '#1d2126';
-    ctx.fillStyle = '#1d2126';
+    ctx.globalAlpha = reduceMotion ? 0.6 : 0.55 + 0.2 * Math.sin(now * 3);
+    ctx.strokeStyle = C.ink;
+    ctx.fillStyle = C.ink;
     ctx.lineWidth = 3;
     ctx.setLineDash([9, 9]);
     ctx.lineDashOffset = reduceMotion ? 0 : -now * 30;
