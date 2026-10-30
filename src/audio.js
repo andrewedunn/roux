@@ -143,6 +143,15 @@ export function createSound() {
     for (let i = 0; i < 18; i++) crackle(t + Math.random() * 0.9, 1.4);
   }
 
+  // A shake of the Crystal bottle: a glassy shk, then the drops spitting into hot roux.
+  function dash() {
+    if (!ctx) return;
+    const t = ctx.currentTime;
+    burst({ at: t, duration: 0.07, type: 'bandpass', frequency: 2600, q: 1.4, peak: 0.22 });
+    tone(1320, t, 0.06, 0.03, 'triangle');
+    for (let i = 0; i < 4; i++) crackle(t + 0.1 + Math.random() * 0.12, 0.9);
+  }
+
   function click() {
     if (!ctx) return;
     burst({ at: ctx.currentTime, duration: 0.03, type: 'bandpass', frequency: 3000, q: 3, peak: 0.12 });
@@ -168,5 +177,5 @@ export function createSound() {
     if (master) master.gain.setTargetAtTime(muted ? 0 : 1, ctx.currentTime, 0.02);
   }
 
-  return { unlock, update, ignite, trinity, click, result, setMuted, isMuted: () => muted };
+  return { unlock, update, ignite, trinity, dash, click, result, setMuted, isMuted: () => muted };
 }

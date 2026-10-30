@@ -1,5 +1,12 @@
 # Roux Wars
 
+> **This branch is the Crystal Hot Sauce partner edition**, a pitch mockup deployed separately
+> as the Worker `roux-crystal` at https://crystal-roux.dunn.us. Don't merge it into `main`;
+> the live game at roux.dunn.us deploys from `main`. What it adds: a "Shake in the Crystal" step
+> after the trinity (`src/brand.js`, bottle and dashes in `src/render.js`), Crystal's own gumbo
+> recipes as "Crystal Kitchen" dishes, and Crystal colors and marks throughout. The marks are
+> drawn stand-ins (Yellowtail script); swap in Crystal's real logo files if the deal moves ahead.
+
 First you make a roux. Cook it to the color on the card: stir so it doesn't
 stick, and drop the trinity to stop the cooking — it keeps darkening for a moment.
 

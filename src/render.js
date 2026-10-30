@@ -1,5 +1,6 @@
 // ABOUTME: Draws the pot top-down on a canvas: burner flames, enamel pot, roux with swirl, bubbles, specks, trinity, spoon.
 // ABOUTME: Everything is drawn from a view object each frame; particles live here because they are purely visual.
+// Partner edition: a Crystal Hot Sauce bottle shakes dashes into the finished roux, and the pot rim wears the brand.
 import { mixHex } from './color.js';
 
 const FLAME_LEVEL = 0.65;
@@ -25,6 +26,13 @@ function readPalette() {
     smokeRgb: token('--smoke-rgb'),
     // Onion, celery, bell pepper: the classic 2:1:1.
     trinity: [token('--onion'), token('--onion'), token('--celery'), token('--pepper')],
+    sauce: token('--crystal-sauce'),
+    sauceDeep: token('--crystal-sauce-deep'),
+    brandBlue: token('--crystal-blue'),
+    brandRed: token('--crystal-red'),
+    cap: token('--crystal-green'),
+    label: token('--card'),
+    script: token('--script'),
   };
 }
 
@@ -44,6 +52,11 @@ export function createPotRenderer(canvas) {
   let puffs = [];
   let trinity = [];
   let dropAt = null;
+  // The Crystal bottle: when it came out, when it last shook, drops in flight, and dashes sitting in the roux.
+  let bottleAt = null;
+  let shakeAt = null;
+  let drops = [];
+  let dashes = [];
 
   function resize(cssW, cssH) {
     const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -66,6 +79,32 @@ export function createPotRenderer(canvas) {
     puffs = [];
     trinity = [];
     dropAt = null;
+    bottleAt = null;
+    shakeAt = null;
+    drops = [];
+    dashes = [];
+  }
+
+  function showBottle(now) {
+    bottleAt = now;
+  }
+
+  // One shake: the bottle jerks toward the pot and a few drops fly from the mouth into the roux.
+  function shake(now) {
+    const { R } = geometry();
+    shakeAt = now;
+    const count = 4 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < count; i++) {
+      const r = R * 0.55 * Math.sqrt(Math.random());
+      const th = Math.random() * Math.PI * 2;
+      drops.push({
+        x1: Math.cos(th) * r - R * 0.08,
+        y1: Math.sin(th) * r - R * 0.1,
+        born: now + 0.07 + i * 0.025,
+        dur: 0.16 + Math.random() * 0.12,
+        size: R * (0.025 + Math.random() * 0.03),
+      });
+    }
   }
 
   function dropTrinity(now) {
@@ -160,6 +199,34 @@ export function createPotRenderer(canvas) {
     ctx.lineWidth = (Ro - Rw) * 0.35;
     ctx.lineCap = 'round';
     ctx.stroke();
+  }
+
+  // The brand rides around the outside of the pot, like a printed band on enamelware.
+  function drawRimText(Ro, Rw) {
+    const text = 'CRYSTAL · LOUISIANA’S PURE HOT SAUCE · ';
+    const size = Math.max(7, (Ro - Rw) * 0.62);
+    const r = (Ro + Rw) / 2;
+    ctx.save();
+    ctx.font = `700 ${size}px 'Barlow Semi Condensed', sans-serif`;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.82)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const full = text.repeat(2);
+    const widths = [...full].map((ch) => ctx.measureText(ch).width);
+    const total = widths.reduce((a, b) => a + b, 0);
+    // Fit the repeated text exactly once around the circle.
+    const scale = (Math.PI * 2 * r) / total;
+    let a = -Math.PI / 2;
+    [...full].forEach((ch, i) => {
+      const step = (widths[i] * scale) / r;
+      ctx.save();
+      ctx.rotate(a + step / 2);
+      ctx.translate(0, -r);
+      ctx.fillText(ch, 0, 0);
+      ctx.restore();
+      a += step;
+    });
+    ctx.restore();
   }
 
   // The enamel wall is the roux's immediate surround. It matches the target chip's mount so both are judged alike.
@@ -282,6 +349,30 @@ export function createPotRenderer(canvas) {
       }
     }
 
+    // Dashes of Crystal: glossy red spots that ride the swirl and slowly spread.
+    for (const d of dashes) {
+      const age = Math.min(1, (now - d.born) / 1.2);
+      const th = d.th + swirlAt(d.r);
+      const x = Math.cos(th) * d.r;
+      const y = Math.sin(th) * d.r;
+      const size = d.size * (1 + 0.6 * age);
+      ctx.globalAlpha = 0.92 - 0.3 * age;
+      ctx.fillStyle = C.sauceDeep;
+      ctx.beginPath();
+      ctx.arc(x, y, size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = C.sauce;
+      ctx.beginPath();
+      ctx.arc(x - size * 0.15, y - size * 0.15, size * 0.72, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 0.6 * (1 - age);
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(x - size * 0.35, y - size * 0.35, size * 0.18, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
     // Oil sheen, kept faint so it doesn't lighten the color you're judging.
     const sheen = ctx.createRadialGradient(-R * 0.38, -R * 0.42, 0, -R * 0.38, -R * 0.42, R * 0.6);
     sheen.addColorStop(0, `rgba(${C.steamRgb}, 0.09)`);
@@ -390,6 +481,116 @@ export function createPotRenderer(canvas) {
     ctx.restore();
   }
 
+  // Where the bottle's mouth sits over the pot, and which way its body points (up and to the right, away from you).
+  function bottlePose(R, now) {
+    const enter = reduceMotion ? 1 : Math.min(1, (now - bottleAt) / 0.35);
+    const ease = 1 - (1 - enter) ** 3;
+    const dx = 0.62;
+    const dy = -0.78;
+    const since = shakeAt === null ? Infinity : now - shakeAt;
+    const jerk = reduceMotion || since > 0.22 ? 0 : Math.sin((Math.PI * since) / 0.22);
+    const out = R * (0.95 * (1 - ease)) - R * 0.12 * jerk;
+    return {
+      mx: R * 0.12 + dx * out,
+      my: -R * 0.18 + dy * out,
+      angle: Math.atan2(-dx, dy) + 0.12 * jerk,
+      alpha: ease,
+    };
+  }
+
+  // A Crystal bottle: green cap, red sauce in clear glass, white label with the blue band and script.
+  function drawBottle(R, now) {
+    if (bottleAt === null) return;
+    const L = R * 1.15;
+    const pose = bottlePose(R, now);
+    ctx.save();
+    ctx.globalAlpha = pose.alpha;
+    ctx.translate(pose.mx, pose.my);
+    ctx.rotate(pose.angle);
+    // Shadow on the stovetop.
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
+    ctx.beginPath();
+    ctx.ellipse(L * 0.06, L * 0.62, L * 0.16, L * 0.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    const glass = (y0, y1, w0, w1) => {
+      ctx.moveTo(-w0 / 2, y0);
+      ctx.lineTo(-w1 / 2, y1);
+      ctx.lineTo(w1 / 2, y1);
+      ctx.lineTo(w0 / 2, y0);
+    };
+    // Sauce-filled glass.
+    const g = ctx.createLinearGradient(-L * 0.14, 0, L * 0.14, 0);
+    g.addColorStop(0, C.sauceDeep);
+    g.addColorStop(0.35, C.sauce);
+    g.addColorStop(1, C.sauceDeep);
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    glass(L * 0.14, L * 0.36, L * 0.085, L * 0.25);
+    ctx.roundRect(-L * 0.135, L * 0.34, L * 0.27, L * 0.66, [L * 0.04, L * 0.04, L * 0.06, L * 0.06]);
+    ctx.fill();
+    // Glass highlight.
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+    ctx.lineWidth = L * 0.02;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-L * 0.085, L * 0.4);
+    ctx.lineTo(-L * 0.085, L * 0.94);
+    ctx.stroke();
+    // Cap.
+    ctx.fillStyle = C.cap;
+    ctx.beginPath();
+    ctx.roundRect(-L * 0.06, 0, L * 0.12, L * 0.17, L * 0.02);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+    ctx.fillRect(-L * 0.04, L * 0.01, L * 0.015, L * 0.15);
+    // Label.
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(-L * 0.135, L * 0.52, L * 0.27, L * 0.34, L * 0.01);
+    ctx.fillStyle = C.label;
+    ctx.fill();
+    ctx.clip();
+    // The bottle pours mouth-down, so the label is drawn turned around to read upright.
+    ctx.translate(0, L * 0.69);
+    ctx.rotate(Math.PI - 0.5);
+    ctx.fillStyle = C.brandBlue;
+    ctx.fillRect(-L * 0.3, -L * 0.055, L * 0.6, L * 0.11);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `${L * 0.1}px ${C.script}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Crystal', 0, L * 0.008);
+    ctx.rotate(0.5);
+    ctx.fillStyle = C.brandRed;
+    ctx.font = `700 ${L * 0.032}px 'Barlow Semi Condensed', sans-serif`;
+    ctx.fillText('HOT SAUCE', 0, L * 0.13);
+    ctx.restore();
+    ctx.restore();
+  }
+
+  function drawDrops(v, R, now) {
+    if (!drops.length) return;
+    const pose = bottlePose(R, now);
+    const swirlAt = (r) => v.swirl * (1 - (0.35 * r) / R);
+    drops = drops.filter((d) => {
+      const t = (now - d.born) / d.dur;
+      if (t < 0) return true;
+      if (t >= 1) {
+        const r = Math.hypot(d.x1, d.y1);
+        dashes.push({ r, th: Math.atan2(d.y1, d.x1) - swirlAt(r), size: d.size, born: now });
+        if (dashes.length > 140) dashes.shift();
+        return false;
+      }
+      const x = pose.mx + (d.x1 - pose.mx) * t;
+      const y = pose.my + (d.y1 - pose.my) * t - R * 0.12 * Math.sin(Math.PI * t);
+      ctx.fillStyle = C.sauce;
+      ctx.beginPath();
+      ctx.ellipse(x, y, d.size * 0.8, d.size * 1.2, Math.atan2(d.y1 - pose.my, d.x1 - pose.mx) + Math.PI / 2, 0, Math.PI * 2);
+      ctx.fill();
+      return true;
+    });
+  }
+
   function drawHint(R, now) {
     const r = R * 0.55;
     const a0 = -Math.PI * 0.85;
@@ -438,13 +639,16 @@ export function createPotRenderer(canvas) {
     drawFlames(Ro, S, now);
     drawHandles(Ro);
     drawPotBody(Ro, Rw);
+    drawRimText(Ro, Rw);
     drawWall(Rw, R);
     drawRoux(view, R, now, dt);
     drawPuffs(now, dt);
     if (v.hint) drawHint(R, now);
     drawSpoon(view, R, S, v.color);
+    drawDrops(view, R, now);
+    drawBottle(R, now);
     ctx.restore();
   }
 
-  return { resize, geometry, reset, dropTrinity, draw };
+  return { resize, geometry, reset, dropTrinity, showBottle, shake, draw };
 }

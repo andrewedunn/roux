@@ -9,6 +9,8 @@ const TIERS = [
 ];
 const JITTER = 0.015;
 const DARKEST_TARGET = 0.97;
+// Partner edition: about half of menus feature a Crystal Kitchen recipe as the medium dish.
+const CRYSTAL_SHARE = 0.5;
 
 // mulberry32: small, fast, deterministic PRNG.
 function seededRandom(seed) {
@@ -29,8 +31,9 @@ export function createMenu(seed) {
   return TIERS.map(({ tier, stages }) => {
     // Pick across every dish in the tier, so each dish is equally likely and thin stages stay rare.
     const options = STAGES.filter((s) => stages.includes(s.name)).flatMap((stage) => stage.dishes.map((d) => ({ stage, d })));
-    const { stage, d } = pick(rand, options);
+    const featured = options.filter(({ d }) => d.crystal);
+    const { stage, d } = featured.length && rand() < CRYSTAL_SHARE ? pick(rand, featured) : pick(rand, options);
     const target = Math.min(DARKEST_TARGET, stage.at + (rand() * 2 - 1) * JITTER);
-    return { tier, stage, dish: d.name, source: { credit: d.credit, url: d.url, kind: d.kind }, target };
+    return { tier, stage, dish: d.name, source: { credit: d.credit, url: d.url, kind: d.kind }, crystal: d.crystal, target };
   });
 }
