@@ -9,7 +9,7 @@ import { shareText, menuFromLink } from './share.js';
 import { createStore } from './store.js';
 import { createPotRenderer } from './render.js';
 import { createSound } from './audio.js';
-import { CRYSTAL, dashVerdict, menuDashLine, crystalCaption } from './brand.js';
+import { CRYSTAL, dashVerdict, menuDashLine, crystalCaption, heatLevel } from './brand.js';
 
 const $ = (id) => document.getElementById(id);
 const els = {
@@ -34,6 +34,9 @@ const els = {
   action: $('action'),
   serve: $('serve'),
   stamp: $('stamp'),
+  heat: $('heat'),
+  heatFill: $('heat-fill'),
+  heatLabel: $('heat-label'),
   sheet: $('sheet'),
 };
 
@@ -104,6 +107,7 @@ function startDish() {
   els.target.textContent = `${dish.stage.name} roux`;
   els.stamp.hidden = !dish.crystal;
   els.serve.hidden = true;
+  els.heat.hidden = true;
   closeSheet();
   setAction('Light the burner', 'light');
 }
@@ -155,6 +159,7 @@ function onAction() {
     sound.dash();
     vibrate(15);
     setAction(`Another dash · ${round.dashes}`, 'crystal');
+    showHeat(round.dashes, true);
     if (round.dashes === 1) {
       els.serve.hidden = false;
     }
@@ -181,8 +186,23 @@ function bringCrystal() {
   round.phase = 'crystal';
   round.dashes = 0;
   renderer.showBottle(performance.now() / 1000);
+  showHeat(0, false);
   setAction('Shake in the Crystal', 'crystal');
   els.action.focus({ preventScroll: true });
+}
+
+// The heat-o-meter face: redder and sweatier with every dash, fire at the top.
+function showHeat(dashes, jolt) {
+  const { level, label, fill } = heatLevel(dashes);
+  els.heat.hidden = false;
+  els.heat.dataset.level = String(level);
+  els.heatFill.style.setProperty('--fill', String(fill));
+  els.heatLabel.textContent = label;
+  if (jolt) {
+    els.heat.classList.remove('jolt');
+    void els.heat.offsetWidth;
+    els.heat.classList.add('jolt');
+  }
 }
 
 function serveDish() {
@@ -517,6 +537,9 @@ window.addEventListener('blur', endKeyStir);
 
 els.action.addEventListener('click', onAction);
 els.serve.addEventListener('click', serveDish);
+els.heat.addEventListener('animationend', (e) => {
+  if (e.animationName === 'jolt') els.heat.classList.remove('jolt');
+});
 
 els.mute.setAttribute('aria-pressed', String(sound.isMuted()));
 els.mute.addEventListener('click', () => {

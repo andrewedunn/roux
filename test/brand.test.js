@@ -2,7 +2,7 @@
 // ABOUTME: Captions share the one-line caption slot, so they keep its 27-character limit.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { dashVerdict, menuDashLine, crystalCaption, CRYSTAL } from '../src/brand.js';
+import { dashVerdict, menuDashLine, crystalCaption, heatLevel, CRYSTAL } from '../src/brand.js';
 
 test('the dash verdict grows with a heavier hand', () => {
   assert.match(dashVerdict(1), /polite/);
@@ -27,4 +27,16 @@ test('every Crystal caption fits the one-line caption (27 characters)', () => {
 
 test('Crystal links point at crystalhotsauce.com', () => {
   for (const key of ['site', 'shop', 'recipes']) assert.match(CRYSTAL[key], /^https:\/\/crystalhotsauce\.com\//);
+});
+
+test('the heat-o-meter climbs from mild to Cult of Crystal and never goes back down', () => {
+  assert.equal(heatLevel(0).level, 0);
+  assert.equal(heatLevel(12).label, 'Cult of Crystal');
+  assert.equal(heatLevel(12).fill, 1);
+  let prev = 0;
+  for (let n = 0; n < 15; n++) {
+    const { level } = heatLevel(n);
+    assert.ok(level >= prev, `heat dropped at ${n} dashes`);
+    prev = level;
+  }
 });

@@ -35,3 +35,21 @@ export function crystalCaption(dashes, burnt) {
   if (dashes < 3) return 'Another dash?';
   return 'Smells like New Orleans.';
 }
+
+// The heat-o-meter face beside the pot: how spicy you've made the dish, from mild to breathing fire.
+export const HEAT_LEVELS = [
+  { from: 0, label: 'Mild as milk' },
+  { from: 1, label: 'A little kick' },
+  { from: 3, label: 'Just right' },
+  { from: 5, label: 'Hoo, that’s hot!' },
+  { from: 9, label: 'Cult of Crystal' },
+];
+export const HEAT_FULL = 10;
+
+export function heatLevel(dashes) {
+  let level = 0;
+  HEAT_LEVELS.forEach((l, i) => {
+    if (dashes >= l.from) level = i;
+  });
+  return { level, label: HEAT_LEVELS[level].label, fill: Math.min(1, dashes / HEAT_FULL) };
+}
