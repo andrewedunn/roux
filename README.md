@@ -1,7 +1,7 @@
 # Roux Wars
 
 > **This branch is the Crystal Hot Sauce partner edition**, a pitch mockup deployed separately
-> as the Worker `roux-crystal` at https://roux-crystal.andrewdunn.workers.dev. Don't merge it into `main`;
+> as the Worker `roux-crystal` at https://crystal-roux.dunn.us. Don't merge it into `main`;
 > the live game at roux.dunn.us deploys from `main`. What it adds: a "Shake in the Crystal" step
 > after the trinity (`src/brand.js`, bottle and dashes in `src/render.js`), Crystal's own gumbo
 > recipes as "Crystal Kitchen" dishes, and Crystal colors and marks throughout. The marks are
