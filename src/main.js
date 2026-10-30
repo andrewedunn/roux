@@ -1,5 +1,5 @@
 // ABOUTME: Game flow and wiring: title → three dishes (ready → cooking → cooling → result) → menu summary.
-// ABOUTME: Owns the frame loop, stirring input, captions, result sheets, and sharing.
+// ABOUTME: Owns the frame loop, stirring input, captions, result sheets, and sharing. Crystal edition adds a shake step.
 import { createCook, stepCook, dropTrinity, canDrop, stirScore, STIR_TO_UNLOCK } from './cook.js';
 import { createStir, stirMove, stirRelease, stirTick } from './stir.js';
 import { createMenu } from './menu.js';
@@ -9,6 +9,7 @@ import { shareText, menuFromLink } from './share.js';
 import { createStore } from './store.js';
 import { createPotRenderer } from './render.js';
 import { createSound } from './audio.js';
+import { CRYSTAL, dashVerdict, menuDashLine, crystalCaption } from './brand.js';
 
 const $ = (id) => document.getElementById(id);
 const els = {
@@ -31,6 +32,8 @@ const els = {
   canvas: $('pot'),
   caption: $('caption'),
   action: $('action'),
+  serve: $('serve'),
+  stamp: $('stamp'),
   sheet: $('sheet'),
 };
 
@@ -99,6 +102,8 @@ function startDish() {
   els.chip.style.background = rouxColor(dish.target);
   els.dish.textContent = dish.dish;
   els.target.textContent = `${dish.stage.name} roux`;
+  els.stamp.hidden = !dish.crystal;
+  els.serve.hidden = true;
   closeSheet();
   setAction('Light the burner', 'light');
 }
@@ -144,6 +149,15 @@ function onAction() {
     round.unlocked = false;
     sound.ignite();
     setAction('Stir first', 'locked');
+  } else if (round.phase === 'crystal') {
+    round.dashes += 1;
+    renderer.shake(performance.now() / 1000);
+    sound.dash();
+    vibrate(15);
+    setAction(`Another dash · ${round.dashes}`, 'crystal');
+    if (round.dashes === 1) {
+      els.serve.hidden = false;
+    }
   } else if (round.phase === 'cooking' && canDrop(round.cook)) {
     round.cook = dropTrinity(round.cook);
     round.phase = 'cooling';
@@ -154,21 +168,48 @@ function onAction() {
   }
 }
 
+// The roux is scored the moment it settles. Then the Crystal comes out: shake in as many dashes as you like.
 function finishDish() {
   round.phase = 'settled';
   if (round.cook.status === 'burnt') vibrate([30, 60, 30]);
-  const result = scoreDish(round.dish.target, round.cook);
-  const stir = stirScore(round.cook);
-  game.results.push({ dish: round.dish, result, stir });
-  setAction(result.burnt ? 'Burnt' : 'Done', 'wait');
-  setTimeout(() => showResult(result, stir), round.cook.status === 'burnt' ? RESULT_DELAY * 2 : RESULT_DELAY);
+  round.scored = { result: scoreDish(round.dish.target, round.cook), stir: stirScore(round.cook) };
+  setAction(round.scored.result.burnt ? 'Burnt' : 'Done', 'wait');
+  setTimeout(bringCrystal, round.cook.status === 'burnt' ? RESULT_DELAY * 2 : RESULT_DELAY);
+}
+
+function bringCrystal() {
+  round.phase = 'crystal';
+  round.dashes = 0;
+  renderer.showBottle(performance.now() / 1000);
+  setAction('Shake in the Crystal', 'crystal');
+  els.action.focus({ preventScroll: true });
+}
+
+function serveDish() {
+  if (round.phase !== 'crystal') return;
+  sound.click();
+  round.phase = 'served';
+  els.serve.hidden = true;
+  const { result, stir } = round.scored;
+  game.results.push({ dish: round.dish, result, stir, dashes: round.dashes });
+  setAction('Served', 'wait');
+  setTimeout(() => showResult(result, stir, round.dashes), RESULT_DELAY);
 }
 
 // The stir score sits under the roux score: how steadily you kept it moving.
 const stirLine = (stir, label = 'Stirring') =>
   `<p class="stir-line">${label} <strong>${stir}</strong>/100 · ${stirVerdict(stir)}</p>`;
 
-function showResult(r, stir) {
+// A little Crystal bottle for the sheets, drawn from the shared symbol in index.html.
+const bottleIcon = '<svg class="bottle-icon" aria-hidden="true"><use href="#crystal-bottle"></use></svg>';
+
+const dashLine = (dashes) => `
+  <div class="crystal-line">
+    ${bottleIcon}
+    <p><strong>${dashes} dash${dashes === 1 ? '' : 'es'} of Crystal</strong><span>${dashVerdict(dashes)}</span></p>
+  </div>`;
+
+function showResult(r, stir, dashes) {
   round.phase = 'result';
   const last = game.index === game.menu.length - 1;
   els.sheet.innerHTML = `
@@ -181,7 +222,8 @@ function showResult(r, stir) {
     <p class="tip">${r.tip}</p>
     ${stirLine(stir)}
     ${r.speckPenalty ? `<p class="penalty">−${r.speckPenalty} for scorched flecks</p>` : ''}
-    <p class="source">${sourceLink(round.dish.source)}</p>
+    ${dashLine(dashes)}
+    <p class="source">${round.dish.crystal ? '<span class="kitchen-tag">Crystal Kitchen</span> ' : ''}${sourceLink(round.dish.source)}</p>
     <button type="button" class="action" id="next">${last ? 'See your menu' : 'Next dish'}</button>`;
   openSheet(`${r.score} out of 100. ${r.verdict} ${r.tip} Stirring ${stir} out of 100.`);
   countUp(els.sheet.querySelector('.num'), r.score);
@@ -203,7 +245,7 @@ function showResult(r, stir) {
 }
 
 function finishMenu() {
-  const dishes = game.results.map(({ dish, result, stir }) => ({
+  const dishes = game.results.map(({ dish, result, stir, dashes }) => ({
     dish: dish.dish,
     stage: dish.stage.name,
     source: dish.source,
@@ -212,12 +254,14 @@ function finishMenu() {
     score: result.score,
     burnt: result.burnt,
     stir,
+    dashes,
+    crystal: dish.crystal,
   }));
   store.markPlayed();
   showSummary(game.seed, dishes);
 }
 
-// dishes: [{ dish, stage, source, targetHex, finalHex, score, burnt, stir }]
+// dishes: [{ dish, stage, source, targetHex, finalHex, score, burnt, stir, dashes, crystal }]
 function showSummary(seed, dishes) {
   const total = totalOf(dishes);
   const rows = dishes
@@ -225,7 +269,7 @@ function showSummary(seed, dishes) {
       (d) => `
       <li>
         <span class="pair"><i style="background:${d.targetHex}"></i><i style="background:${d.finalHex}"></i></span>
-        <span class="row-name"><a href="${d.source.url}" target="_blank" rel="noopener">${d.dish}</a><small>${d.stage} roux${d.burnt ? ' · burnt' : ''}</small></span>
+        <span class="row-name"><a href="${d.source.url}" target="_blank" rel="noopener">${d.dish}</a><small>${d.stage} roux${d.burnt ? ' · burnt' : ''} · ${d.dashes} 🌶️${d.crystal ? ' · Crystal Kitchen' : ''}</small></span>
         <span class="row-pts">${d.score}</span>
       </li>`,
     )
@@ -238,8 +282,13 @@ function showSummary(seed, dishes) {
     <p class="score" aria-hidden="true"><span class="num">${reduceMotion ? total : 0}</span><span class="of">/${dishes.length * 100}</span></p>
     <p class="verdict">${verdict}</p>
     ${stirLine(stir, 'Stirring, on average,')}
+    <div class="crystal-line">
+      ${bottleIcon}
+      <p><strong>${menuDashLine(dishes.reduce((sum, d) => sum + d.dashes, 0))}</strong><span>${CRYSTAL.tagline}</span></p>
+    </div>
     <div class="sheet-actions">
       <button type="button" class="action" id="share">Share</button>
+      <a class="shop" href="${CRYSTAL.shop}" target="_blank" rel="noopener">Get Crystal for your kitchen</a>
       <button type="button" class="secondary" id="again">Cook another menu</button>
     </div>`;
   openSheet(`${total} out of ${dishes.length * 100}. ${verdict} Stirring ${stir} out of 100.`);
@@ -336,6 +385,9 @@ function updateCaption() {
     }
   } else if (phase === 'cooling') {
     text = 'Still darkening…';
+  } else if (phase === 'crystal' || phase === 'served') {
+    text = crystalCaption(round.dashes, cook.status === 'burnt');
+    tone = cook.status === 'burnt' ? 'warn' : 'brand';
   } else if (cook.status === 'burnt') {
     text = cook.burnReason === 'scorched' ? 'Scorched on the bottom.' : 'Smells burnt.';
     tone = 'warn';
@@ -447,6 +499,7 @@ els.canvas.addEventListener('pointercancel', endStir);
 els.canvas.addEventListener('lostpointercapture', endStir);
 
 window.addEventListener('keydown', (e) => {
+  if ((e.key === 'c' || e.key === 'C') && !e.repeat && round?.phase === 'crystal') onAction();
   if ((e.key === 's' || e.key === 'S') && !e.repeat && round) {
     keyStirring = true;
     hasStirred = true;
@@ -463,6 +516,7 @@ window.addEventListener('blur', endKeyStir);
 
 
 els.action.addEventListener('click', onAction);
+els.serve.addEventListener('click', serveDish);
 
 els.mute.setAttribute('aria-pressed', String(sound.isMuted()));
 els.mute.addEventListener('click', () => {

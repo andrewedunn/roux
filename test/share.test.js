@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { scoreBar, shareText, menuUrl, menuFromLink } from '../src/share.js';
 
-const dish = (name, score, burnt = false, stir = 90) => ({ dish: name, score, burnt, stir });
+const dish = (name, score, burnt = false, stir = 90, dashes = 2) => ({ dish: name, score, burnt, stir, dashes });
 
 test('the score bar fills a brown square per 20 points', () => {
   assert.equal(scoreBar(dish('x', 94)), '🟫🟫🟫🟫🟫');
@@ -16,7 +16,7 @@ test('a burnt dish shows black squares, the end of the color ladder', () => {
   assert.equal(scoreBar(dish('x', 0, true)), '⬛⬛⬛⬛⬛');
 });
 
-test('share text has a header with the average stir score, a line per dish, and a link to the same menu', () => {
+test('share text has a header with the average stir score, a line per dish, the Crystal count, and a link to the same menu', () => {
   const text = shareText({
     seed: 46655,
     dishes: [
@@ -29,10 +29,11 @@ test('share text has a header with the average stir score, a line per dish, and 
   assert.equal(
     text,
     [
-      'Roux Wars — 175/300 · stirring 83',
+      'Roux Wars × Crystal — 175/300 · stirring 83',
       '🟫🟫🟫🟫🟫 94 Crawfish étouffée',
       '🟫🟫🟫🟫⬜ 81 Grillades & grits',
       '⬛⬛⬛⬛⬛ Duck & andouille gumbo',
+      '🌶️ 6 dashes of Crystal #CultOfCrystal',
       'https://roux.dunn.us/?m=zzz',
     ].join('\n'),
   );

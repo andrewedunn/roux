@@ -1,5 +1,6 @@
 /* ABOUTME: Styles for Roux Wars: a light enamel stovetop, index-card ticket, result sheet, and title card. */
 /* ABOUTME: Mobile-first single column; every color, size, and easing comes from the tokens in :root. */
+/* Crystal Hot Sauce partner edition: Crystal blue pot and ink, Crystal red keys, script mark, cap-green trinity key. */
 /* Hallmark · scope: app (single-screen game) · theme: custom · vibe: "Louisiana home kitchen: enamel, index cards, roux"
  * display: Ultra · body: Barlow Semi Condensed · card text: Courier Prime · anchor: enamel blue + bell-pepper green
  * light-only on purpose: brown only reads as brown against lighter surroundings
@@ -21,9 +22,21 @@
   --ink-shadow: #07090b;
   --on-dark: #ffffff;
 
+  /* Crystal Hot Sauce */
+  --crystal-blue: #003f7f;
+  --crystal-blue-deep: #002a57;
+  --crystal-red: #ab2711;
+  --crystal-red-deep: #741a0b;
+  --crystal-red-hover: #c0301a;
+  --crystal-green: #2f7d32;
+  --crystal-sauce: #d2391f;
+  --crystal-sauce-deep: #9c2412;
+  --script: 'Yellowtail', 'Brush Script MT', cursive;
+  --lift-red: 0 4px 0 var(--crystal-red-deep), 0 10px 16px -10px rgba(0, 0, 0, 0.5);
+
   /* Kitchen */
-  --pot: #27496d;
-  --pot-edge: #1a3350;
+  --pot: #0f4a8a;
+  --pot-edge: var(--crystal-blue-deep);
   --grate: #a3a6a4;
   --wood: #c4914f;
   --wood-edge: #8e6230;
@@ -112,7 +125,8 @@ button {
   touch-action: manipulation;
 }
 
-button:focus-visible {
+button:focus-visible,
+a:focus-visible {
   outline: 3px solid var(--pot);
   outline-offset: 3px;
 }
@@ -153,6 +167,14 @@ button:focus-visible {
   font-family: var(--display);
   font-size: var(--text-lead);
   white-space: nowrap;
+  color: var(--crystal-blue);
+}
+
+.topbar-mark {
+  width: 76px;
+  height: 38px;
+  margin-left: -6px;
+  flex: none;
 }
 
 .progress {
@@ -211,6 +233,27 @@ button:focus-visible {
   background-position: 0 22px, 0 22px;
   background-repeat: no-repeat;
   box-shadow: var(--shadow-card);
+}
+
+/* Crystal's own recipes get a rubber stamp on the card. */
+.stamp {
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+  padding: 2px 6px;
+  border: 1.5px solid var(--crystal-red);
+  border-radius: 3px;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--crystal-red);
+  transform: rotate(-5deg);
+  opacity: 0.9;
+}
+
+.stamp[hidden] {
+  display: none;
 }
 
 /* The chip sits on the same enamel that rings the roux in the pot, so both are judged alike. */
@@ -292,6 +335,11 @@ button:focus-visible {
   color: var(--char);
 }
 
+.caption.brand {
+  color: var(--crystal-red);
+  font-weight: 700;
+}
+
 .caption.alarm {
   color: var(--char);
   font-weight: 700;
@@ -315,19 +363,54 @@ button:focus-visible {
   font-size: var(--text-lead);
   letter-spacing: 0.02em;
   white-space: nowrap;
-  background: var(--ink);
+  background: var(--crystal-blue);
   position: relative;
   isolation: isolate;
   overflow: hidden;
   transform: translateY(-3px);
-  box-shadow: var(--lift-ink);
+  box-shadow: 0 4px 0 var(--crystal-blue-deep), 0 10px 16px -10px rgba(0, 0, 0, 0.5);
   transition: transform var(--dur-press) var(--ease-out), box-shadow var(--dur-press) var(--ease-out),
     background-color var(--dur-fade) var(--ease-out);
 }
 
 .action:active {
   transform: translateY(1px);
-  box-shadow: 0 0 0 var(--ink-shadow);
+  box-shadow: 0 0 0 var(--crystal-blue-deep);
+}
+
+/* The Crystal key: red like the sauce, with the bottle beside the label. */
+.action[data-kind='crystal'],
+.title .action,
+#share {
+  background: var(--crystal-red);
+  box-shadow: var(--lift-red);
+}
+
+.action[data-kind='crystal']:active,
+.title .action:active,
+#share:active {
+  box-shadow: 0 0 0 var(--crystal-red-deep);
+}
+
+/* While the Crystal is out, "Serve it" sits beside the shake key so the pot never resizes. */
+.controls:has(.serve:not([hidden])) {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+}
+
+.serve {
+  width: 100%;
+  height: 60px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--card);
+  box-shadow: inset 0 0 0 2px var(--crystal-blue);
+  font-weight: 700;
+  font-size: var(--text-body);
+  color: var(--crystal-blue);
+}
+
+.serve[hidden] {
+  display: none;
 }
 
 /* Once unlocked, "Drop the trinity" is a calm outlined key, not a bright "go" signal. */
@@ -391,7 +474,12 @@ button:focus-visible {
 
 @media (hover: hover) {
   .action:hover {
-    background: var(--ink-hover);
+    background: #0b4d96;
+  }
+  .action[data-kind='crystal']:hover,
+  .title .action:hover,
+  #share:hover {
+    background: var(--crystal-red-hover);
   }
   .action[data-kind='trinity']:hover {
     background: var(--pepper-wash);
@@ -547,8 +635,66 @@ button:focus-visible {
   outline-offset: 2px;
 }
 
+/* The Crystal line on the result and menu sheets. */
+.crystal-line {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: #f3e6e2;
+  box-shadow: inset 3px 0 0 var(--crystal-red);
+}
+
+.bottle-icon {
+  width: 16px;
+  height: 48px;
+  flex: none;
+}
+
+.crystal-line p {
+  margin: 0;
+  display: grid;
+  line-height: 1.2;
+}
+
+.crystal-line strong {
+  color: var(--crystal-red-deep);
+}
+
+.crystal-line span {
+  color: var(--ink-2);
+}
+
+.kitchen-tag {
+  display: inline-block;
+  padding: 0 5px;
+  border: 1.5px solid var(--crystal-red);
+  border-radius: 3px;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--crystal-red);
+  vertical-align: 1px;
+}
+
+.shop {
+  display: grid;
+  place-items: center;
+  height: 48px;
+  margin-top: 10px;
+  border-radius: var(--radius-md);
+  box-shadow: inset 0 0 0 2px var(--crystal-red);
+  font-weight: 700;
+  color: var(--crystal-red);
+  text-decoration: none;
+}
+
 .menu-title {
   margin: 0 0 10px;
+  color: var(--crystal-blue);
   font-family: var(--display);
   font-weight: 400;
   font-size: var(--text-lead);
@@ -647,6 +793,33 @@ button:focus-visible {
   margin: auto;
 }
 
+.presents {
+  margin: 0 0 6px;
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-sm);
+  font-family: var(--type);
+  font-size: var(--text-body);
+  color: var(--ink-2);
+}
+
+.title-mark {
+  width: 180px;
+  height: 90px;
+  margin: -14px 0 -10px -14px;
+}
+
+.presents span {
+  padding-bottom: 14px;
+}
+
+.logo-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
 .logo {
   margin: 0;
   display: flex;
@@ -655,13 +828,41 @@ button:focus-visible {
   font-weight: 400;
   font-size: var(--text-logo);
   line-height: 0.86;
+  color: var(--crystal-blue);
+}
+
+.title-bottle {
+  width: 54px;
+  height: 162px;
+  flex: none;
+  transform: rotate(8deg);
+  filter: drop-shadow(0 6px 6px rgba(0, 0, 0, 0.25));
+}
+
+.edition {
+  margin: 10px 0 0;
+  font-weight: 700;
+  font-size: var(--text-label);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--crystal-red);
+}
+
+.since {
+  margin: 18px 0 0;
+  text-align: center;
+  font-weight: 600;
+  font-size: var(--text-label);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--crystal-blue);
 }
 
 .stages {
   display: grid;
   grid-template-columns: repeat(8, minmax(0, 1fr));
   height: 30px;
-  margin: 20px 0 22px;
+  margin: 14px 0 22px;
   border-radius: 3px;
   overflow: hidden;
   box-shadow: var(--shadow-strip);

@@ -46,3 +46,10 @@ test('every dish in a tier is equally likely, so thin stages like Black stay rar
   const expected = blackDishes / darkDishes;
   assert.ok(Math.abs(black / runs - expected) < 0.04, `Black came up ${(100 * black) / runs}% vs ${(100 * expected).toFixed(0)}% expected`);
 });
+
+test('about half of menus feature a Crystal Kitchen recipe as the medium dish', () => {
+  let featured = 0;
+  const runs = 2000;
+  for (let seed = 0; seed < runs; seed++) if (createMenu(seed)[1].crystal) featured += 1;
+  assert.ok(Math.abs(featured / runs - 0.5) < 0.06, `Crystal dishes came up ${(100 * featured) / runs}%`);
+});

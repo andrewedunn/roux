@@ -1,9 +1,10 @@
-// Cloudflare Worker config for roux.dunn.us (slug: roux). Static assets only; no server code.
+// Cloudflare Worker config for the Crystal Hot Sauce partner edition (crystal-roux.dunn.us), built from the
+// crystal branch. The live game (roux.dunn.us, Worker "roux") is deployed from main and is untouched by this.
 {
-  "name": "roux",
+  "name": "roux-crystal",
   "compatibility_date": "2025-09-01",
   "assets": {
     "directory": "."
   },
-  "routes": [{ "pattern": "roux.dunn.us", "custom_domain": true }]
+  "routes": [{ "pattern": "crystal-roux.dunn.us", "custom_domain": true }]
 }

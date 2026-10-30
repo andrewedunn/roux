@@ -1,5 +1,6 @@
 // ABOUTME: Share text for a finished menu, plus the link that lets a friend cook the same three dishes.
-// ABOUTME: Menus are identified by their seed, written in base 36 (?m=abc12).
+// ABOUTME: Menus are identified by their seed, written in base 36 (?m=abc12). Partner edition credits Crystal.
+import { CRYSTAL } from './brand.js';
 
 const BAR_LENGTH = 5;
 
@@ -21,11 +22,13 @@ export function menuFromLink(search) {
   return seed <= 0xffffffff ? seed : null;
 }
 
-// dishes: [{ dish, score, burnt, stir }]
+// dishes: [{ dish, score, burnt, stir, dashes }]
 export function shareText({ seed, dishes, origin }) {
   const total = dishes.reduce((sum, d) => sum + d.score, 0);
   const stirring = Math.round(dishes.reduce((sum, d) => sum + d.stir, 0) / dishes.length);
-  const header = `Roux Wars — ${total}/${dishes.length * 100} · stirring ${stirring}`;
+  const header = `Roux Wars × Crystal — ${total}/${dishes.length * 100} · stirring ${stirring}`;
   const lines = dishes.map((d) => (d.burnt ? `${scoreBar(d)} ${d.dish}` : `${scoreBar(d)} ${d.score} ${d.dish}`));
-  return [header, ...lines, menuUrl(origin, seed)].join('\n');
+  const dashes = dishes.reduce((sum, d) => sum + (d.dashes ?? 0), 0);
+  const crystal = `🌶️ ${dashes} dash${dashes === 1 ? '' : 'es'} of Crystal ${CRYSTAL.hashtag}`;
+  return [header, ...lines, crystal, menuUrl(origin, seed)].join('\n');
 }

@@ -4,7 +4,9 @@ import { mixHex } from './color.js';
 
 // Each dish is a specific published recipe whose roux color it states. Where cooks disagree on a dish's
 // color, each version is its own dish. Sources and notes: docs/dishes.md.
-const dish = (name, credit, url, kind = 'recipe') => ({ name, credit, url, kind });
+const dish = (name, credit, url, kind = 'recipe', crystal = false) => ({ name, credit, url, kind, crystal });
+// Crystal Hot Sauce's own published recipes: the "Crystal Kitchen" dishes in the partner edition.
+const crystalDish = (name, credit, url) => dish(name, credit, url, 'recipe', true);
 
 export const STAGES = [
   { name: 'White', at: 0.0, hex: '#efe3c8', dishes: [] },
@@ -64,6 +66,9 @@ export const STAGES = [
     at: 0.67,
     hex: '#74462a',
     dishes: [
+      // Both Crystal recipes say: the color of a Hershey's (milk chocolate) bar.
+      crystalDish('Commander’s seafood gumbo', 'Commander’s Palace · Crystal Hot Sauce', 'https://crystalhotsauce.com/recipes/commanders-palace-seafood-gumbo/'),
+      crystalDish('Crystal chicken gumbo', 'Crystal Hot Sauce', 'https://crystalhotsauce.com/recipes/chicken-and-sausage-gumbo/'),
       dish('Chicken & sausage gumbo', 'Isaac Toups · NewOrleans.com', 'https://www.neworleans.com/blog/post/chef-isaac-toups-chicken-sausage-gumbo-with-cornbread/'),
       dish('Classic seafood gumbo', 'Emeril Lagasse', 'https://www.emerils.com/126534/emerils-classic-seafood-gumbo'),
       dish('Rabbit sauce piquante', 'Louisiana Cookin’', 'https://louisianacookin.com/rabbit-sauce-piquante/'),
