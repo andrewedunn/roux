@@ -1,10 +1,10 @@
-// Cloudflare Worker config for the Crystal Hot Sauce partner edition (crystal-roux.dunn.us), built from the
-// crystal branch. The live game (roux.dunn.us, Worker "roux") is deployed from main and is untouched by this.
+// Cloudflare Worker config for the Crystal Hot Sauce partner edition, served on its workers.dev URL
+// (https://roux-crystal.andrewdunn.workers.dev). The live game (roux.dunn.us, Worker "roux") deploys from main.
 {
   "name": "roux-crystal",
   "compatibility_date": "2025-09-01",
+  "workers_dev": true,
   "assets": {
     "directory": "."
-  },
-  "routes": [{ "pattern": "crystal-roux.dunn.us", "custom_domain": true }]
+  }
 }

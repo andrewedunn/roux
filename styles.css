@@ -32,6 +32,10 @@
   --crystal-sauce: #d2391f;
   --crystal-sauce-deep: #9c2412;
   --script: 'Yellowtail', 'Brush Script MT', cursive;
+  --cond: 'Oswald', 'Barlow Semi Condensed', 'Arial Narrow', sans-serif;
+  --band: linear-gradient(180deg, #5b86b8, #3f6ea3);
+  --gold: #c9a227;
+  --iron: #cfdbe9;
   --lift-red: 0 4px 0 var(--crystal-red-deep), 0 10px 16px -10px rgba(0, 0, 0, 0.5);
 
   /* Kitchen */
@@ -152,22 +156,28 @@ a:focus-visible {
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto auto minmax(0, 1fr) auto auto;
   gap: 10px;
-  padding: calc(env(safe-area-inset-top, 0px) + var(--space-sm)) var(--space-lg)
-    calc(env(safe-area-inset-bottom, 0px) + 14px);
+  padding: env(safe-area-inset-top, 0px) var(--space-lg) calc(env(safe-area-inset-bottom, 0px) + 14px);
 }
 
 .topbar {
   display: flex;
   align-items: center;
   gap: var(--space-md);
-  height: 44px;
+  height: 48px;
+  margin: 0 calc(-1 * var(--space-lg));
+  padding: 0 var(--space-lg);
+  background: var(--band);
+  box-shadow: inset 0 -3px 0 var(--gold);
+  color: var(--on-dark);
 }
 
 .wordmark {
-  font-family: var(--display);
+  font-family: var(--cond);
+  font-weight: 600;
   font-size: var(--text-lead);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
   white-space: nowrap;
-  color: var(--crystal-blue);
 }
 
 .topbar-mark {
@@ -179,12 +189,13 @@ a:focus-visible {
 
 .progress {
   margin-left: auto;
-  font-weight: 600;
+  font-family: var(--cond);
+  font-weight: 500;
   font-size: var(--text-label);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   white-space: nowrap;
-  color: var(--ink-2);
+  color: var(--on-dark);
 }
 
 .mute {
@@ -196,7 +207,7 @@ a:focus-visible {
   background: transparent;
   display: grid;
   place-items: center;
-  color: var(--ink-2);
+  color: var(--on-dark);
 }
 
 .mute svg {
@@ -359,9 +370,11 @@ a:focus-visible {
   border: 0;
   border-radius: 14px;
   color: var(--on-dark);
-  font-weight: 700;
+  font-family: var(--cond);
+  font-weight: 600;
   font-size: var(--text-lead);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   white-space: nowrap;
   background: var(--crystal-blue);
   position: relative;
@@ -404,8 +417,11 @@ a:focus-visible {
   border-radius: var(--radius-md);
   background: var(--card);
   box-shadow: inset 0 0 0 2px var(--crystal-blue);
-  font-weight: 700;
+  font-family: var(--cond);
+  font-weight: 600;
   font-size: var(--text-body);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--crystal-blue);
 }
 
@@ -681,6 +697,9 @@ a:focus-visible {
 }
 
 .shop {
+  font-family: var(--cond);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   display: grid;
   place-items: center;
   height: 48px;
@@ -695,8 +714,10 @@ a:focus-visible {
 .menu-title {
   margin: 0 0 10px;
   color: var(--crystal-blue);
-  font-family: var(--display);
-  font-weight: 400;
+  font-family: var(--cond);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
   font-size: var(--text-lead);
 }
 
@@ -776,9 +797,12 @@ a:focus-visible {
   flex-direction: column;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: calc(env(safe-area-inset-top, 0px) + var(--space-xl)) var(--space-xl)
-    calc(env(safe-area-inset-bottom, 0px) + var(--space-xl));
-  background: var(--range);
+  padding: 0 var(--space-xl) calc(env(safe-area-inset-bottom, 0px) + var(--space-xl));
+  /* A faded wash of French Quarter balcony ironwork, like the Crystal site's hero. */
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.55) 45%, #fbfbf8 78%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='64' viewBox='0 0 48 64'%3E%3Cg fill='none' stroke='%23b9cbe0' stroke-width='2'%3E%3Ccircle cx='24' cy='20' r='12'/%3E%3Ccircle cx='24' cy='20' r='5'/%3E%3Cpath d='M24 32v32M0 0v64M48 0v64M24 32c-8 6-16 6-24 0M24 32c8 6 16 6 24 0M12 52c4-6 20-6 24 0'/%3E%3C/g%3E%3C/svg%3E"),
+    linear-gradient(180deg, #e3ebf4, #f4f6f8);
   transition: opacity var(--dur-sheet) var(--ease-out), visibility var(--dur-sheet) var(--ease-out);
 }
 
@@ -791,6 +815,67 @@ a:focus-visible {
   width: 100%;
   max-width: 420px;
   margin: auto;
+  padding-top: var(--space-md);
+}
+
+.brand-band {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: calc(env(safe-area-inset-top, 0px) + 52px);
+  margin: 0 calc(-1 * var(--space-xl)) 64px;
+  padding: env(safe-area-inset-top, 0px) var(--space-xl) 0;
+  background: var(--band);
+  box-shadow: inset 0 -3px 0 var(--gold);
+  font-family: var(--cond);
+  font-weight: 500;
+  font-size: var(--text-body);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--on-dark);
+}
+
+/* The Crystal mark hangs off the middle of the band, the way it does on their site. */
+.brand-band a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.band-mark {
+  position: absolute;
+  left: 50%;
+  bottom: -56px;
+  width: 150px;
+  height: 75px;
+  transform: translateX(-50%);
+  text-transform: none;
+  filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.3));
+}
+
+.headline {
+  margin: 0 0 14px;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--cond);
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--crystal-blue);
+  line-height: 0.95;
+  transform: rotate(-5deg);
+  transform-origin: left bottom;
+}
+
+.hl-big {
+  font-size: clamp(34px, 11vw, 48px);
+}
+
+.hl-small {
+  margin-left: 18%;
+  font-size: clamp(18px, 5.6vw, 24px);
+  font-weight: 500;
 }
 
 .presents {
@@ -841,7 +926,8 @@ a:focus-visible {
 
 .edition {
   margin: 10px 0 0;
-  font-weight: 700;
+  font-family: var(--cond);
+  font-weight: 500;
   font-size: var(--text-label);
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -851,7 +937,8 @@ a:focus-visible {
 .since {
   margin: 18px 0 0;
   text-align: center;
-  font-weight: 600;
+  font-family: var(--cond);
+  font-weight: 500;
   font-size: var(--text-label);
   letter-spacing: 0.1em;
   text-transform: uppercase;
