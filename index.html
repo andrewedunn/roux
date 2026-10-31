@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- ABOUTME: Page shell for Roux Wars: title card, kitchen (target ticket, pot canvas, action button), result sheet. -->
+<!-- ABOUTME: Page shell for Roux Wars: title card, kitchen (target ticket, pot canvas, speed meter, action button), result sheet. -->
 <!-- ABOUTME: Light-only on purpose: brown only reads as brown against lighter surroundings. -->
 <html lang="en">
   <head>
@@ -49,12 +49,22 @@
 
       <div class="stove" id="stove">
         <canvas id="pot" role="img" aria-label="Pot of roux. Drag in circles to stir."></canvas>
+        <p class="countdown" id="countdown" aria-live="assertive"></p>
+      </div>
+
+      <div class="meter" id="meter" data-state="idle" aria-hidden="true">
+        <span class="meter-end">Slow</span>
+        <div class="meter-track">
+          <div class="meter-band" id="meter-band"></div>
+          <div class="meter-needle" id="meter-needle"></div>
+        </div>
+        <span class="meter-end">Fast</span>
       </div>
 
       <p class="caption" id="caption" aria-live="polite"></p>
 
       <div class="controls" id="controls">
-        <button type="button" class="action" id="action" data-kind="light">Light the burner</button>
+        <button type="button" class="action" id="action" data-kind="wait" aria-disabled="true">Get ready…</button>
       </div>
 
       <section class="sheet" id="sheet" hidden></section>
@@ -65,17 +75,24 @@
       <div class="title-inner">
         <h1 class="logo"><span>Roux</span><span>Wars</span></h1>
         <div class="stages" id="stages" aria-hidden="true"></div>
+        <p class="rounds-head">3 rounds. 3 roux. 1 hot pot.</p>
+        <ol class="rounds" id="rounds">
+          <li><span class="round-chip"></span><b>Round 1</b><span class="round-shade">Light</span><span class="round-heat">Easy does it</span></li>
+          <li><span class="round-chip"></span><b>Round 2</b><span class="round-shade">Medium</span><span class="round-heat">Getting warm</span></li>
+          <li><span class="round-chip"></span><b>Round 3</b><span class="round-shade">Dark</span><span class="round-heat">Don’t blink</span></li>
+        </ol>
+        <p class="tagline">Each round, a new dish and a new color to match. Each one darker, each one closer to burnt.</p>
         <div class="intro" id="intro" hidden>
           <p class="lead">First you make a roux.</p>
-          <p class="tagline">Cook it to the color on the card. Don’t burn it.</p>
           <ul class="howto">
-            <li><b>Stir</b> in circles so it doesn’t stick.</li>
+            <li>The burner lights itself on <b>3, 2, 1.</b> Get your finger in the pot.</li>
+            <li><b>Stir</b> in circles, and keep your speed in the <b>green zone</b>. It moves, so watch it.</li>
             <li><b>Drop the trinity</b> to stop the cooking. It keeps darkening for a moment.</li>
           </ul>
         </div>
         <p class="menu-label" id="menu-label" hidden></p>
         <button type="button" class="action" id="start">Start cooking</button>
-        <p class="keyhint">On a keyboard, hold S to stir.</p>
+        <p class="keyhint">On a keyboard, tap S to stir. Tap faster to stir faster.</p>
       </div>
     </section>
 

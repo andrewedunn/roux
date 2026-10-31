@@ -43,6 +43,7 @@ export function createPotRenderer(canvas) {
   let bubbles = [];
   let puffs = [];
   let trinity = [];
+  let splats = [];
   let dropAt = null;
 
   function resize(cssW, cssH) {
@@ -65,7 +66,36 @@ export function createPotRenderer(canvas) {
     bubbles = [];
     puffs = [];
     trinity = [];
+    splats = [];
     dropAt = null;
+  }
+
+  // Each whole splash leaves a blob of roux on the stovetop just outside the pot, in the roux's color then.
+  function addSplats(count, color, Ro, S) {
+    while (splats.length < count) {
+      const th = Math.random() * Math.PI * 2;
+      const r = Ro * (1.08 + Math.random() * 0.3);
+      const size = S * (0.012 + Math.random() * 0.014);
+      const drops = Array.from({ length: 3 + Math.floor(Math.random() * 4) }, () => ({
+        dx: (Math.random() - 0.5) * size * 4,
+        dy: (Math.random() - 0.5) * size * 4,
+        size: size * (0.2 + Math.random() * 0.35),
+      }));
+      splats.push({ x: Math.cos(th) * r, y: Math.sin(th) * r, size, color, drops });
+    }
+  }
+
+  function drawSplats() {
+    for (const p of splats) {
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      for (const d of p.drops) {
+        ctx.moveTo(p.x + d.dx + d.size, p.y + d.dy);
+        ctx.arc(p.x + d.dx, p.y + d.dy, d.size, 0, Math.PI * 2);
+      }
+      ctx.fill();
+    }
   }
 
   function dropTrinity(now) {
@@ -418,7 +448,7 @@ export function createPotRenderer(canvas) {
     ctx.restore();
   }
 
-  // view: { color, temp, burnerOn, active, stick, specks, swirl, stirActivity, spoon, trail, burnt, hint }
+  // view: { color, temp, burnerOn, active, stick, specks, splashes, swirl, stirActivity, spoon, trail, burnt, hint }
   // spoon and trail points are in canvas CSS pixels.
   function draw(v, now, dt) {
     const { S, cx, cy, Ro, Rw, R } = geometry();
@@ -434,6 +464,8 @@ export function createPotRenderer(canvas) {
     const local = (p) => ({ ...p, x: p.x - cx, y: p.y - cy });
     const view = { ...v, spoon: v.spoon && local(v.spoon), trail: v.trail.map(local) };
 
+    addSplats(Math.floor(v.splashes ?? 0), v.color, Ro, S);
+    drawSplats();
     drawGrate(S);
     drawFlames(Ro, S, now);
     drawHandles(Ro);

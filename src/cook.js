@@ -1,4 +1,4 @@
-// ABOUTME: Pure cooking simulation for one pot of roux: heat lag, browning, sticking, specks, carryover.
+// ABOUTME: Pure cooking simulation for one pot of roux: heat lag, browning, sticking, specks, splashes, carryover.
 // ABOUTME: stepCook advances on real elapsed seconds (sub-stepped) so it plays the same at any frame rate.
 
 export const SCORCH_SPECKS = 10;
@@ -22,6 +22,9 @@ const SETTLED_RATE = 0.004;
 const MAX_SUBSTEP = 1 / 120;
 const REAL_STIR = 0.35; // stir activity that counts as actually stirring
 const STIR_GRACE = 0.3; // seconds after a stir that still count as "kept it moving"
+// Stirring too fast for the meter slops roux over the side: over one splash a second when way too fast.
+const SPLASH_RATE = 1.3;
+const ON_PACE = 0.35; // |pace| under this still counts as keeping the meter's pace
 
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 
@@ -47,6 +50,7 @@ export function createCook() {
     rate: 0,
     stick: 0,
     specks: 0,
+    splashes: 0,
     stirredFor: 0,
     sinceStir: 0,
     cookedFor: 0,
@@ -56,7 +60,8 @@ export function createCook() {
   };
 }
 
-function substep(s, stir, h) {
+// pace: -1..1 from the speed meter (src/pace.js). Too slow stirs less well; too fast splashes.
+function substep(s, rawStir, pace, h) {
   const cooling = s.status === 'cooling';
   const target = cooling ? 0 : BURNER;
   const temp = target + (s.temp - target) * Math.exp(-h / (cooling ? COOL_LAG : HEAT_LAG));
@@ -65,12 +70,15 @@ function substep(s, stir, h) {
 
   let stick = s.stick;
   let specks = s.specks;
+  let splashes = s.splashes;
+  const stir = rawStir * (1 - Math.max(0, -pace));
   const stirring = stir >= REAL_STIR;
   const stirredFor = !cooling && stirring ? s.stirredFor + h : s.stirredFor;
   // Stir consistency is only measured while the burner is on, not while the trinity cools it.
   const sinceStir = stirring ? 0 : s.sinceStir + h;
   const cookedFor = cooling ? s.cookedFor : s.cookedFor + h;
-  const coveredFor = !cooling && (stirring || sinceStir < STIR_GRACE) ? s.coveredFor + h : s.coveredFor;
+  const onPace = Math.abs(pace) < ON_PACE;
+  const coveredFor = !cooling && onPace && (stirring || sinceStir < STIR_GRACE) ? s.coveredFor + h : s.coveredFor;
   if (cooling) {
     stick = Math.max(0, stick - STICK_CLEAR * h);
   } else {
@@ -79,6 +87,7 @@ function substep(s, stir, h) {
     if (stick > SPECK_THRESHOLD) {
       specks += h * SPECK_RATE * temp * Math.min(1, (stick - SPECK_THRESHOLD) / SPECK_RAMP);
     }
+    if (pace > 0 && rawStir >= REAL_STIR) splashes += h * SPLASH_RATE * pace;
   }
 
   let status = s.status;
@@ -103,6 +112,7 @@ function substep(s, stir, h) {
     rate,
     stick,
     specks,
+    splashes,
     stirredFor,
     sinceStir,
     cookedFor,
@@ -110,19 +120,19 @@ function substep(s, stir, h) {
   };
 }
 
-// input: { stir: 0..1 }
-export function stepCook(state, { stir }, dt) {
+// input: { stir: 0..1, pace: -1..1 (optional; 0 = on pace) }
+export function stepCook(state, { stir, pace = 0 }, dt) {
   let s = state;
   let remaining = dt;
   while (remaining > 1e-9 && (s.status === 'cooking' || s.status === 'cooling')) {
     const h = Math.min(MAX_SUBSTEP, remaining);
-    s = substep(s, clamp01(stir), h);
+    s = substep(s, clamp01(stir), Math.max(-1, Math.min(1, pace)), h);
     remaining -= h;
   }
   return s;
 }
 
-// 0–100: how much of the cooking the roux was kept moving. Stop-and-go stirring scores low.
+// 0–100: how much of the cooking the roux was kept moving at the meter's pace. Stop-and-go or off-pace scores low.
 export function stirScore(state) {
   return state.cookedFor > 0 ? Math.round((100 * state.coveredFor) / state.cookedFor) : 100;
 }

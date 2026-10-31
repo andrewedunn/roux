@@ -143,6 +143,20 @@ export function createSound() {
     for (let i = 0; i < 18; i++) crackle(t + Math.random() * 0.9, 1.4);
   }
 
+  // Countdown pips: three short beeps, then a higher one as the burner catches.
+  function beep(final = false) {
+    if (!ctx) return;
+    tone(final ? 1320 : 880, ctx.currentTime, final ? 0.22 : 0.12, 0.1, 'square');
+  }
+
+  // Roux slopping over the side onto the hot stovetop.
+  function splash() {
+    if (!ctx) return;
+    const t = ctx.currentTime;
+    burst({ at: t, duration: 0.18, type: 'bandpass', frequency: 1800, q: 1.2, peak: 0.18 });
+    crackle(t + 0.05, 0.8);
+  }
+
   function click() {
     if (!ctx) return;
     burst({ at: ctx.currentTime, duration: 0.03, type: 'bandpass', frequency: 3000, q: 3, peak: 0.12 });
@@ -168,5 +182,5 @@ export function createSound() {
     if (master) master.gain.setTargetAtTime(muted ? 0 : 1, ctx.currentTime, 0.02);
   }
 
-  return { unlock, update, ignite, trinity, click, result, setMuted, isMuted: () => muted };
+  return { unlock, update, ignite, beep, splash, trinity, click, result, setMuted, isMuted: () => muted };
 }

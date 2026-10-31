@@ -1,10 +1,11 @@
 // ABOUTME: Turns finger movement in the pot into stir activity (0..1) for the sim and a signed spin for the swirl.
-// ABOUTME: Forgiving on purpose: any brisk movement counts, whether circles or back-and-forth scraping.
+// ABOUTME: Also tracks raw stir speed (pot radii per second) for the speed meter.
 
 const FULL_SPEED = 1.5; // pot radii per second of finger travel counts as full stirring
 const ATTACK = 0.08; // seconds for activity to rise toward the current speed
 const RELEASE = 0.6; // seconds for activity to fade when the finger slows or stops
 const SPIN_SMOOTHING = 0.15;
+const SPEED_SMOOTHING = 0.2; // seconds; keeps the meter's needle from jittering with each finger event
 const STILL_AFTER = 0.06; // seconds without movement before we treat the finger as still
 const CENTER_DEADZONE = 0.15; // angle is too noisy this close to the middle of the pot
 
@@ -17,7 +18,7 @@ function wrapAngle(a) {
 }
 
 export function createStir() {
-  return { activity: 0, spin: 0, last: null, lastMoveTime: -Infinity };
+  return { activity: 0, spin: 0, speed: 0, last: null, lastMoveTime: -Infinity };
 }
 
 // point: { x, y, t } with t in seconds; pot: { cx, cy, r } in the same units as x/y.
@@ -30,6 +31,7 @@ export function stirMove(state, point, pot) {
   const speed = Math.hypot(point.x - last.x, point.y - last.y) / pot.r / dt;
   const target = Math.min(1, speed / FULL_SPEED);
   const activity = approach(state.activity, target, dt, target > state.activity ? ATTACK : RELEASE);
+  const smoothed = approach(state.speed ?? 0, speed, dt, SPEED_SMOOTHING);
 
   const fromCenter = Math.hypot(point.x - pot.cx, point.y - pot.cy) / pot.r;
   let spin = state.spin;
@@ -39,7 +41,7 @@ export function stirMove(state, point, pot) {
     spin = approach(spin, wrapAngle(a1 - a0) / dt, dt, SPIN_SMOOTHING);
   }
 
-  return { activity, spin, last: point, lastMoveTime: point.t };
+  return { activity, spin, speed: smoothed, last: point, lastMoveTime: point.t };
 }
 
 export function stirRelease(state) {
@@ -56,6 +58,7 @@ export function stirTick(state, now) {
     ...state,
     tickTime: now,
     activity: approach(state.activity, 0, dt, RELEASE),
+    speed: approach(state.speed ?? 0, 0, dt, SPEED_SMOOTHING * 2),
     spin: approach(state.spin, 0, dt, RELEASE * 2),
   };
 }
