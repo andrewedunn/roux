@@ -1,20 +1,26 @@
-// ABOUTME: The stir-speed meter: a seeded "right speed" band that holds, then glides somewhere new during a cook.
+// ABOUTME: The stir-speed meter: a seeded "right speed" band that drifts back and forth and sometimes lurches.
 // ABOUTME: paceOf turns the player's stir speed into -1..1 (too slow .. too fast), 0 while inside the band.
 
 export const METER_MAX = 9; // pot radii per second at the "Fast" end of the meter (~2.4 circles a second)
 const LOW = 1.6; // the band's center never goes slower than this...
 const HIGH = 7.2; // ...or faster than this
 const FIRST_CENTER = 3.8; // about one easy circle a second
-const MIN_JUMP = 1.8; // each move goes somewhere you have to notice
-const SOFT = 1.1; // radii/s past the band's edge until it counts as fully too slow or too fast
+const SETTLE = 2.5; // seconds the band sits still at the start so you can find it
+const SOFT = 0.9; // radii/s past the band's edge until it counts as fully too slow or too fast
 const SCHEDULE_SECONDS = 90;
 
-// Width of the band, and how long it holds still, for each round: later rounds are narrower and fidgetier.
+// The band never really stops: it drifts slowly back and forth, pauses now and then, and every so often
+// lurches somewhere new. Later rounds are narrower, lurch more often, and drift faster.
 const ROUNDS = [
-  { width: 3.0, hold: [5, 8], glide: 1.6 },
-  { width: 2.6, hold: [4, 6.5], glide: 1.3 },
-  { width: 2.2, hold: [3, 5], glide: 1.1 },
+  { width: 2.5, lurch: 0.2, drift: [2.6, 4.2] },
+  { width: 2.1, lurch: 0.3, drift: [2.2, 3.6] },
+  { width: 1.8, lurch: 0.38, drift: [1.8, 3.0] },
 ];
+const DRIFT_REACH = [0.6, 2.0]; // how far a slow drift travels, radii/s
+const LURCH_REACH = [2.0, 3.6]; // how far a lurch travels
+const LURCH_SECONDS = [0.55, 0.9];
+const PAUSE_CHANCE = 0.3;
+const PAUSE_SECONDS = [0.4, 1.4];
 
 // mulberry32: small, fast, deterministic PRNG.
 function seededRandom(seed) {
@@ -33,25 +39,36 @@ const easeInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
 // Seeded so a shared menu link gets the same meter moves, round by round.
 export function createPace(seed, round = 0) {
   const rand = seededRandom(seed ^ Math.imul(round + 1, 0x9e3779b1));
-  const { width, hold, glide } = ROUNDS[Math.min(round, ROUNDS.length - 1)];
-  // Moves: [{ start, from, to }] — hold at `from` until `start`, then glide to `to`.
+  const between = ([a, b]) => a + rand() * (b - a);
+  const { width, lurch, drift } = ROUNDS[Math.min(round, ROUNDS.length - 1)];
+  // Moves: [{ start, duration, from, to, fast }], back to back, with an occasional pause between.
   const moves = [];
   let center = FIRST_CENTER;
-  let t = hold[0] + 1; // a little extra time to settle in before the first move
+  let dir = rand() < 0.5 ? -1 : 1;
+  let t = SETTLE;
   while (t < SCHEDULE_SECONDS) {
-    let to;
-    do to = LOW + rand() * (HIGH - LOW);
-    while (Math.abs(to - center) < MIN_JUMP);
-    moves.push({ start: t, from: center, to });
+    const fast = moves.length > 0 && rand() < lurch;
+    const reach = between(fast ? LURCH_REACH : DRIFT_REACH);
+    // Drifts mostly keep going the same way (back and forth); lurches pick a side at random.
+    if (fast ? rand() < 0.5 : rand() < 0.25) dir = -dir;
+    let to = center + dir * reach;
+    if (to < LOW || to > HIGH) {
+      dir = -dir;
+      to = center + dir * reach;
+    }
+    to = Math.max(LOW, Math.min(HIGH, to));
+    const duration = between(fast ? LURCH_SECONDS : drift);
+    moves.push({ start: t, duration, from: center, to, fast });
     center = to;
-    t += glide + hold[0] + rand() * (hold[1] - hold[0]);
+    t += duration;
+    if (rand() < PAUSE_CHANCE) t += between(PAUSE_SECONDS);
   }
 
   function centerAt(seconds) {
     let c = FIRST_CENTER;
     for (const m of moves) {
       if (seconds < m.start) break;
-      const k = Math.min(1, (seconds - m.start) / glide);
+      const k = Math.min(1, (seconds - m.start) / m.duration);
       c = m.from + (m.to - m.from) * easeInOut(k);
     }
     return c;
@@ -63,9 +80,9 @@ export function createPace(seed, round = 0) {
     return { lo: c - width / 2, hi: c + width / 2 };
   }
 
-  // True while the band is gliding (or about to), so the meter can flag it.
-  function moving(seconds, lead = 0.6) {
-    return moves.some((m) => seconds >= m.start - lead && seconds < m.start + glide);
+  // True just before and during a lurch, so the meter can flag it.
+  function moving(seconds, lead = 0.4) {
+    return moves.some((m) => m.fast && seconds >= m.start - lead && seconds < m.start + m.duration);
   }
 
   return { band, moving };

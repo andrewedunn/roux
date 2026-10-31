@@ -10,19 +10,22 @@ const centers = (pace, seconds) =>
     return (lo + hi) / 2;
   });
 
-test('the band starts at an easy speed and holds still for the first few seconds', () => {
+test('the band starts at an easy speed and holds still for the first couple of seconds', () => {
   const pace = createPace(42, 0);
   const first = pace.band(0);
-  const later = pace.band(5);
+  const later = pace.band(2.4);
   assert.deepEqual(first, later);
   assert.ok(first.lo > 1 && first.hi < 6, JSON.stringify(first));
 });
 
-test('the band moves several times during a dark-roux cook', () => {
-  const c = centers(createPace(7, 2), 45);
-  let moves = 0;
-  for (let i = 1; i < c.length; i++) if (Math.abs(c[i] - c[i - 1]) > 0.01 && Math.abs(c[i - 1] - c[i - 2] ?? 0) <= 0.01) moves++;
-  assert.ok(moves >= 4, `moved ${moves} times`);
+test('the band keeps drifting, and sometimes lurches quickly', () => {
+  for (let seed = 0; seed < 20; seed++) {
+    const c = centers(createPace(seed, 2), 45);
+    const steps = c.slice(12).map((v, i) => Math.abs(v - c[i + 11]));
+    const still = steps.filter((d) => d < 0.005).length;
+    assert.ok(still < steps.length * 0.35, `seed ${seed}: still ${still} of ${steps.length} quarter-seconds`);
+    assert.ok(Math.max(...steps) > 0.6, `seed ${seed}: fastest step ${Math.max(...steps)}`);
+  }
 });
 
 test('the band always stays on the meter', () => {
