@@ -59,3 +59,17 @@ test('scraping back and forth also counts as stirring', () => {
   }
   assert.ok(s.activity > 0.5, `activity ${s.activity}`);
 });
+
+test('speed tracks how fast the finger travels, in pot radii per second', () => {
+  const slow = circle(createStir(), { seconds: 2, revsPerSec: 0.5 });
+  const fast = circle(createStir(), { seconds: 2, revsPerSec: 2 });
+  // One lap at 0.6 of the radius is 2π·0.6 ≈ 3.8 radii.
+  assert.ok(Math.abs(slow.speed - 1.9) < 0.3, `slow ${slow.speed}`);
+  assert.ok(Math.abs(fast.speed - 7.5) < 0.6, `fast ${fast.speed}`);
+});
+
+test('speed falls back to zero when the finger stops', () => {
+  let s = circle(createStir(), { seconds: 1, revsPerSec: 1 });
+  for (let i = 1; i <= 2 * HZ; i++) s = stirTick(s, 1 + i / HZ);
+  assert.ok(s.speed < 0.2, `speed ${s.speed}`);
+});

@@ -7,20 +7,27 @@ doesn't stick, and drop the trinity to stop the cooking.
 
 1. A dish card shows the target roux as a paint chip (e.g. "Peanut butter —
    Crawfish étouffée").
-2. The burner comes on. The roux darkens on its own.
+2. A 3…2…1…Fire! countdown over the pot lights the burner by itself (players
+   didn't realize they had to tap "Light the burner"). The roux darkens on its own.
 3. The player **stirs** by circling a finger in the pot. Steady stirring keeps
    the bottom from catching; pauses leave black flecks (−3 each), and enough
    flecks means it's scorched. A stir score shows how steadily you did it.
-4. There is one steady burner. (Heat levels were cut: with no reward for speed,
+4. A **stir-speed meter** (Slow ↔ Fast) under the pot shows a green zone.
+   Keep your stir speed (the needle) in it. The zone holds for a few seconds,
+   then glides somewhere new; each round's zone is narrower and moves more
+   often (`src/pace.js`). Too slow stirs less well, so the bottom catches and
+   flecks; too fast slops roux onto the stovetop (−2 per splash). The zone is
+   seeded from the menu, so a shared link gets the same moves.
+5. There is one steady burner. (Heat levels were cut: with no reward for speed,
    Low was always the safer pick, so it wasn't a real choice.)
-5. After lighting, the button is a locked **Stir first** that fills as you stir.
+6. After lighting, the button is a locked **Stir first** that fills as you stir.
    It unlocks after ~2 seconds of real stirring (`STIR_TO_UNLOCK` in `src/cook.js`,
    enforced in the sim), and then reads **Drop the trinity** as a calm outlined
    key rather than a bright "go" button, so nobody taps it just because it
    appeared.
-6. The player taps **Drop the trinity** to commit. The pot keeps darkening for
+7. The player taps **Drop the trinity** to commit. The pot keeps darkening for
    a moment (carryover) while it cools. Then the result.
-7. A menu is three dishes: one light, one medium, one dark target.
+8. A menu is three rounds: one light, one medium, one dark target.
 
 ## Why it's built this way (from research)
 
@@ -62,8 +69,8 @@ doesn't stick, and drop the trinity to stop the cooking.
   off) leaves 2–3 flecks by milk chocolate and ~6 by dark chocolate, and
   walking away scorches it in about 9 seconds.
 - **Stir score** (0–100, `stirScore` in `src/cook.js`) is the share of cooking
-  time (burner on, before the trinity) that the roux was kept moving, with a
-  0.3 s grace after each stir. Steady stirring = 100, brief lifts ≈ 93,
+  time (burner on, before the trinity) that the roux was kept moving at the
+  meter's pace, with a 0.3 s grace after each stir. Steady stirring = 100, brief lifts ≈ 93,
   stop-and-go ≈ 60–70. It's shown on each result and averaged on the menu and
   in the share text, but it doesn't change the roux score — the flecks do that.
 

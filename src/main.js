@@ -1,8 +1,9 @@
-// ABOUTME: Game flow and wiring: title → three dishes (ready → cooking → cooling → result) → menu summary.
-// ABOUTME: Owns the frame loop, stirring input, captions, result sheets, and sharing.
+// ABOUTME: Game flow and wiring: title → three rounds (countdown → cooking → cooling → result) → menu summary.
+// ABOUTME: Owns the frame loop, stirring input, the speed meter, captions, result sheets, and sharing.
 import { createCook, stepCook, dropTrinity, canDrop, stirScore, STIR_TO_UNLOCK } from './cook.js';
 import { createStir, stirMove, stirRelease, stirTick } from './stir.js';
-import { createMenu } from './menu.js';
+import { createMenu, TIERS } from './menu.js';
+import { createPace, paceOf, METER_MAX } from './pace.js';
 import { scoreDish, menuVerdict, stirVerdict } from './score.js';
 import { STAGES, rouxColor, smellAt } from './roux.js';
 import { shareText, menuFromLink } from './share.js';
@@ -29,6 +30,11 @@ const els = {
   target: $('target'),
   stove: $('stove'),
   canvas: $('pot'),
+  countdown: $('countdown'),
+  meter: $('meter'),
+  meterBand: $('meter-band'),
+  meterNeedle: $('meter-needle'),
+  rounds: $('rounds'),
   caption: $('caption'),
   action: $('action'),
   sheet: $('sheet'),
@@ -41,6 +47,10 @@ const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').match
 const KEYBOARD_SPIN = 6; // rad/s swirl when stirring with the S key
 const SWIRL_FOLLOW = 0.55; // the roux turns a bit slower than the spoon
 const RESULT_DELAY = 450; // ms between the pot settling and the result sheet
+const COUNT_STEP = 0.8; // seconds per beat of the 3…2…1 countdown
+const COUNT_WORDS = ['3', '2', '1', 'Fire!'];
+const COUNT_LEAD = 0.45; // seconds before "3" so the title or result sheet can clear first
+const KEY_SPEED_STEP = 0.8; // pot radii per second per ↑/↓ press
 
 function deviceStorage() {
   try {
@@ -58,6 +68,8 @@ let game = null; // { seed, menu, index, results }
 let round = null; // one dish in progress
 let hasStirred = false;
 let keyStirring = false;
+const KEY_START_SPEED = 3.8; // S-key stir speed at the start of each round: about one easy circle a second
+let keySpeed = KEY_START_SPEED;
 let lastFrame = null;
 
 // Browsers refuse vibration until the page has had a real tap.
@@ -86,7 +98,10 @@ function startDish() {
   const dish = game.menu[game.index];
   round = {
     dish,
-    phase: 'ready',
+    phase: 'countdown',
+    countAt: null, // set on the first frame, so the countdown starts once the dish is on screen
+    countShown: -1,
+    pace: createPace(game.seed, game.index),
     cook: createCook(),
     stir: createStir(),
     swirl: 0,
@@ -95,12 +110,47 @@ function startDish() {
     pointerId: null,
   };
   renderer.reset();
-  els.progress.textContent = `Dish ${game.index + 1} of ${game.menu.length}`;
+  keySpeed = KEY_START_SPEED;
+  els.progress.textContent = `Round ${game.index + 1} of ${game.menu.length}`;
   els.chip.style.background = rouxColor(dish.target);
   els.dish.textContent = dish.dish;
   els.target.textContent = `${dish.stage.name} roux`;
+  els.countdown.textContent = '';
+  els.countdown.className = 'countdown';
   closeSheet();
-  setAction('Light the burner', 'light');
+  setAction('Get ready…', 'wait');
+}
+
+// 3…2…1…Fire! The burner lights itself on "Fire!", so nobody has to find a button to start cooking.
+function updateCountdown(now) {
+  if (round.countAt === null) {
+    if (round.phase === 'countdown') round.countAt = now + COUNT_LEAD;
+    else return;
+  }
+  const step = Math.floor((now - round.countAt) / COUNT_STEP);
+  if (step < 0 || step === round.countShown) return;
+  round.countShown = step;
+  if (step >= COUNT_WORDS.length) {
+    els.countdown.textContent = '';
+    els.countdown.className = 'countdown';
+    return;
+  }
+  els.countdown.textContent = COUNT_WORDS[step];
+  // Restart the pop animation for each beat.
+  els.countdown.className = 'countdown';
+  void els.countdown.offsetWidth;
+  els.countdown.className = `countdown show${step === COUNT_WORDS.length - 1 ? ' fire' : ''}`;
+  if (step === COUNT_WORDS.length - 1) ignite();
+  else sound.beep();
+}
+
+function ignite() {
+  round.phase = 'cooking';
+  round.unlocked = false;
+  sound.ignite();
+  sound.beep(true);
+  vibrate(20);
+  setAction('Stir first', 'locked');
 }
 
 // While a sheet is up, the kitchen behind it is out of reach for Tab and screen readers.
@@ -139,12 +189,7 @@ function updateLock() {
 
 function onAction() {
   sound.unlock();
-  if (round.phase === 'ready') {
-    round.phase = 'cooking';
-    round.unlocked = false;
-    sound.ignite();
-    setAction('Stir first', 'locked');
-  } else if (round.phase === 'cooking' && canDrop(round.cook)) {
+  if (round.phase === 'cooking' && canDrop(round.cook)) {
     round.cook = dropTrinity(round.cook);
     round.phase = 'cooling';
     renderer.dropTrinity(performance.now() / 1000);
@@ -181,8 +226,9 @@ function showResult(r, stir) {
     <p class="tip">${r.tip}</p>
     ${stirLine(stir)}
     ${r.speckPenalty ? `<p class="penalty">−${r.speckPenalty} for scorched flecks</p>` : ''}
+    ${r.splashPenalty ? `<p class="penalty">−${r.splashPenalty} for splashing it on the stove</p>` : ''}
     <p class="source">${sourceLink(round.dish.source)}</p>
-    <button type="button" class="action" id="next">${last ? 'See your menu' : 'Next dish'}</button>`;
+    <button type="button" class="action" id="next">${last ? 'See your menu' : `On to round ${game.index + 2}`}</button>`;
   openSheet(`${r.score} out of 100. ${r.verdict} ${r.tip} Stirring ${stir} out of 100.`);
   countUp(els.sheet.querySelector('.num'), r.score);
   sound.result(r.score, r.burnt);
@@ -316,18 +362,24 @@ function countUp(el, value) {
 
 let captionShown = '';
 
-function updateCaption() {
+function updateCaption(pace, stirLevel) {
   const { phase, cook } = round;
   let text = '';
   let tone = '';
-  if (phase === 'ready') {
-    text = hasStirred ? 'Light it when you’re ready.' : 'Try stirring in circles.';
+  if (phase === 'countdown') {
+    text = hasStirred ? 'Burner’s coming on…' : 'Try stirring in circles.';
   } else if (phase === 'cooking') {
     if (cook.stick > 0.3) {
       text = 'It’s catching. Stir!';
       tone = 'alarm';
+    } else if (pace > 0.3) {
+      text = 'Easy! It’s splashing.';
+      tone = 'warn';
     } else if (cook.stick > 0.08) {
       text = 'Starting to stick. Stir.';
+      tone = 'warn';
+    } else if (pace < -0.3 && stirLevel > 0.3) {
+      text = 'Faster! Keep up.';
       tone = 'warn';
     } else if (!round.unlocked) {
       text = 'Stir to get it going.';
@@ -347,6 +399,28 @@ function updateCaption() {
   captionShown = key;
   els.caption.textContent = text;
   els.caption.className = `caption ${tone}`;
+}
+
+// --- Speed meter ------------------------------------------------------------
+
+let meterShown = '';
+
+function updateMeter(speed, band, pace) {
+  const { phase, cook } = round;
+  const live = phase === 'cooking';
+  let state = 'idle';
+  if (live) state = pace > 0.05 ? 'fast' : pace < -0.05 ? 'slow' : 'on';
+  else if (phase !== 'countdown') state = 'off';
+  const moving = live && round.pace.moving(cook.cookedFor);
+  const pct = (v) => `${(100 * Math.max(0, Math.min(1, v / METER_MAX))).toFixed(2)}%`;
+  els.meter.style.setProperty('--lo', pct(band.lo));
+  els.meter.style.setProperty('--hi', pct(band.hi));
+  els.meter.style.setProperty('--needle', pct(speed));
+  const key = `${state}|${moving}`;
+  if (key === meterShown) return;
+  meterShown = key;
+  els.meter.dataset.state = state;
+  els.meter.toggleAttribute('data-moving', moving && !reduceMotion);
 }
 
 // --- Frame loop -------------------------------------------------------------
@@ -369,10 +443,20 @@ function frame(ms) {
     }
     round.trail = round.trail.filter((p) => now - p.t < 0.35);
 
+    updateCountdown(now);
+    const speed = keyStirring ? keySpeed : round.stir.speed;
+    const band = round.pace.band(round.cook.cookedFor);
+    const pace = round.phase === 'cooking' ? paceOf(speed, band) : 0;
+
     if (round.phase === 'cooking' || round.phase === 'cooling') {
       const specksBefore = Math.floor(round.cook.specks);
-      round.cook = stepCook(round.cook, { stir: stirLevel }, dt);
+      const splashesBefore = Math.floor(round.cook.splashes);
+      round.cook = stepCook(round.cook, { stir: stirLevel, pace }, dt);
       if (Math.floor(round.cook.specks) > specksBefore) vibrate(12);
+      if (Math.floor(round.cook.splashes) > splashesBefore) {
+        sound.splash();
+        vibrate(15);
+      }
       if (round.cook.status === 'done' || round.cook.status === 'burnt') finishDish();
       updateLock();
     }
@@ -388,17 +472,19 @@ function frame(ms) {
         active: sizzling,
         stick: phase === 'cooking' ? cook.stick : 0,
         specks: cook.specks,
+        splashes: cook.splashes,
         swirl: round.swirl,
         stirActivity: stirLevel,
         spoon: round.spoon,
         trail: round.trail,
         burnt: cook.status === 'burnt',
-        hint: (phase === 'ready' && !hasStirred) || (phase === 'cooking' && !round.unlocked && stirLevel < 0.3),
+        hint: (phase === 'countdown' && !hasStirred) || (phase === 'cooking' && !round.unlocked && stirLevel < 0.3),
       },
       now,
       dt,
     );
-    updateCaption();
+    updateMeter(speed, band, pace);
+    updateCaption(pace, stirLevel);
   }
   requestAnimationFrame(frame);
 }
@@ -450,6 +536,10 @@ window.addEventListener('keydown', (e) => {
   if ((e.key === 's' || e.key === 'S') && !e.repeat && round) {
     keyStirring = true;
     hasStirred = true;
+  } else if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && round) {
+    e.preventDefault();
+    const step = e.key === 'ArrowUp' ? KEY_SPEED_STEP : -KEY_SPEED_STEP;
+    keySpeed = Math.max(KEY_SPEED_STEP, Math.min(METER_MAX, keySpeed + step));
   }
 });
 function endKeyStir() {
@@ -498,6 +588,11 @@ new ResizeObserver(([entry]) => {
 }).observe(els.stove);
 
 els.stages.innerHTML = STAGES.map((s) => `<i style="background:${s.hex}"></i>`).join('');
+// Each round's chip runs through the shades that round can ask for.
+els.rounds.querySelectorAll('.round-chip').forEach((chip, i) => {
+  const hexes = STAGES.filter((s) => TIERS[i].stages.includes(s.name)).map((s) => s.hex);
+  chip.style.background = `linear-gradient(135deg, ${hexes.join(', ')})`;
+});
 
 setupTitle();
 requestAnimationFrame(frame);

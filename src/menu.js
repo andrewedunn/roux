@@ -2,7 +2,7 @@
 // ABOUTME: Seeded so a future daily menu can be the same for everyone.
 import { STAGES } from './roux.js';
 
-const TIERS = [
+export const TIERS = [
   { tier: 'light', stages: ['Blond', 'Peanut butter'] },
   { tier: 'medium', stages: ['Copper penny', 'Milk chocolate'] },
   { tier: 'dark', stages: ['Brick', 'Dark chocolate', 'Black'] },

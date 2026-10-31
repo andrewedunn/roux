@@ -136,7 +136,7 @@ button:focus-visible {
   margin: 0 auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto auto;
   gap: 10px;
   padding: calc(env(safe-area-inset-top, 0px) + var(--space-sm)) var(--space-lg)
     calc(env(safe-area-inset-bottom, 0px) + 14px);
@@ -274,6 +274,124 @@ button:focus-visible {
   width: 100%;
   height: 100%;
   touch-action: none;
+}
+
+/* 3…2…1…Fire! over the pot. The burner lights itself on "Fire!". */
+.countdown {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  font-family: var(--display);
+  font-size: clamp(72px, 28vw, 132px);
+  line-height: 1;
+  color: var(--ink);
+  -webkit-text-stroke: 3px var(--card);
+  paint-order: stroke fill;
+  text-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+}
+
+.countdown.show {
+  animation: count-pop calc(0.8s - 20ms) var(--ease-out) both;
+}
+
+.countdown.fire {
+  color: var(--char);
+  font-size: clamp(56px, 20vw, 100px);
+}
+
+@keyframes count-pop {
+  0% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+  18% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+/* Stir-speed meter: keep the needle (your speed) inside the green band. The band moves during the cook. */
+.meter {
+  --lo: 30%;
+  --hi: 60%;
+  --needle: 0%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-sm);
+  font-family: var(--ui);
+  font-size: var(--text-label);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  transition: opacity var(--dur-fade) var(--ease-out);
+}
+
+.meter-track {
+  position: relative;
+  height: 26px;
+  border-radius: 13px;
+  background: var(--card);
+  box-shadow: inset 0 0 0 2px var(--rule), inset 0 2px 4px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.meter-band {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: var(--lo);
+  width: calc(var(--hi) - var(--lo));
+  border-radius: 10px;
+  background: var(--pepper-wash);
+  box-shadow: inset 0 0 0 2px var(--pepper);
+  transition: background-color var(--dur-fade) var(--ease-out), box-shadow var(--dur-fade) var(--ease-out);
+}
+
+.meter-needle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: clamp(3px, var(--needle), calc(100% - 3px));
+  width: 6px;
+  margin-left: -3px;
+  border-radius: 3px;
+  background: var(--ink);
+  box-shadow: 0 0 0 2px var(--card);
+}
+
+.meter[data-state='on'] .meter-band {
+  background: var(--pepper);
+}
+
+.meter[data-state='slow'] .meter-needle,
+.meter[data-state='fast'] .meter-needle {
+  background: var(--char);
+}
+
+.meter[data-state='slow'] .meter-band,
+.meter[data-state='fast'] .meter-band {
+  box-shadow: inset 0 0 0 2px var(--char);
+}
+
+.meter[data-moving] .meter-band {
+  animation: pulse 0.25s var(--ease-in-out) infinite alternate;
+}
+
+.meter[data-state='off'] {
+  opacity: 0.35;
 }
 
 /* One fixed line so the pot never resizes when the caption changes. Copy is kept to 27 characters. */
@@ -667,12 +785,80 @@ button:focus-visible {
   box-shadow: var(--shadow-strip);
 }
 
+.rounds-head {
+  margin: 0 0 var(--space-md);
+  font-family: var(--display);
+  font-size: var(--text-lead);
+  line-height: 1.15;
+}
+
+/* Three recipe cards, one per round, each a little darker and a little more crooked. */
+.rounds {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rounds li {
+  display: grid;
+  justify-items: start;
+  gap: 2px;
+  padding: 8px 8px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+  transform: rotate(-1.5deg);
+}
+
+.rounds li:nth-child(2) {
+  transform: rotate(1deg) translateY(3px);
+}
+
+.rounds li:nth-child(3) {
+  transform: rotate(-0.5deg);
+}
+
+.round-chip {
+  width: 100%;
+  height: 34px;
+  margin-bottom: 4px;
+  border-radius: 2px;
+  box-shadow: var(--shadow-chip);
+}
+
+.rounds b {
+  font-family: var(--type);
+  font-size: var(--text-label);
+  font-weight: 400;
+  color: var(--ink-2);
+}
+
+.round-shade {
+  font-family: var(--display);
+  font-size: var(--text-body);
+  line-height: 1.1;
+}
+
+.round-heat {
+  font-size: var(--text-label);
+  font-weight: 700;
+  color: var(--char);
+}
+
+.title .tagline {
+  margin: var(--space-lg) 0 18px;
+  color: var(--ink-2);
+}
+
 .intro {
   margin-bottom: 22px;
 }
 
 .lead {
-  margin: 0;
+  margin: 0 0 var(--space-sm);
   font-size: var(--text-lead);
   font-weight: 700;
   line-height: 1.2;
@@ -744,8 +930,12 @@ button:focus-visible {
   .sheet {
     animation: fade 150ms var(--ease-out);
   }
-  .caption.alarm {
+  .caption.alarm,
+  .countdown.show {
     animation: none;
+  }
+  .countdown.show {
+    opacity: 1;
   }
   .title,
   .action,

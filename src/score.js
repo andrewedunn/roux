@@ -8,6 +8,7 @@ import { rouxColor } from './roux.js';
 const K = 0.1;
 const SPOT_ON_DELTA = 0.015;
 const POINTS_PER_SPECK = 3;
+const POINTS_PER_SPLASH = 2;
 
 const VERDICTS = [
   { min: 95, text: 'Ça c’est bon.' },
@@ -52,14 +53,16 @@ export function scoreDish(targetBrowning, cook) {
       direction: 'dark',
       secondsOff: null,
       speckPenalty: 0,
+      splashPenalty: 0,
       verdict: BURN_VERDICTS[cook.burnReason],
       tip: cook.burnReason === 'scorched' ? 'Keep stirring so the bottom doesn’t catch.' : 'Pull it sooner, or drop the heat.',
     };
   }
 
   const speckPenalty = POINTS_PER_SPECK * Math.floor(cook.specks);
+  const splashPenalty = POINTS_PER_SPLASH * Math.floor(cook.splashes ?? 0);
   const colorScore = Math.round(100 / (1 + (dE / K) ** 2));
-  const score = Math.max(0, colorScore - speckPenalty);
+  const score = Math.max(0, colorScore - speckPenalty - splashPenalty);
 
   let direction = 'spot-on';
   if (dE >= SPOT_ON_DELTA) direction = cook.browning > targetBrowning ? 'dark' : 'light';
@@ -74,6 +77,7 @@ export function scoreDish(targetBrowning, cook) {
     direction,
     secondsOff,
     speckPenalty,
+    splashPenalty,
     verdict: VERDICTS.find((v) => score >= v.min).text,
     tip: tipFor(direction, dE, secondsOff ?? 0),
   };
@@ -92,10 +96,10 @@ export function menuVerdict(total) {
 }
 
 const STIR_VERDICTS = [
-  { min: 95, text: 'Never let it sit.' },
-  { min: 80, text: 'Mostly steady.' },
-  { min: 60, text: 'Stop and go.' },
-  { min: 0, text: 'Left it alone too long.' },
+  { min: 95, text: 'Never missed a beat.' },
+  { min: 80, text: 'Mostly kept pace.' },
+  { min: 60, text: 'Off and on.' },
+  { min: 0, text: 'Lost the rhythm.' },
 ];
 
 export function stirVerdict(stirScore) {

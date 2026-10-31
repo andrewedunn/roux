@@ -168,3 +168,31 @@ test('only the cooking counts toward the stir score, not the wait after the trin
   const { state } = run(s, IDLE, (st) => st.status === 'done', 20);
   assert.equal(stirScore(state), 100);
 });
+
+test('stirring well below the meter lets the bottom catch', () => {
+  const { state } = run(createCook(), { stir: 1, pace: -1 }, (s) => s.browning >= 0.5);
+  assert.ok(state.specks >= 3, `specks ${state.specks}`);
+});
+
+test('a little under the band is forgiven', () => {
+  const { state } = run(createCook(), { stir: 1, pace: -0.3 }, (s) => s.browning >= 0.5);
+  assert.equal(Math.floor(state.specks), 0);
+});
+
+test('stirring too fast splashes roux out of the pot, about one a second', () => {
+  const { state, t } = run(createCook(), { stir: 1, pace: 1 }, (s, time) => time >= 5);
+  assert.ok(state.splashes > 4 && state.splashes < 7, `splashes ${state.splashes} in ${t}s`);
+  assert.equal(Math.floor(state.specks), 0);
+});
+
+test('on-pace stirring never splashes', () => {
+  const { state } = run(createCook(), STIRRING, (s) => s.browning >= 0.67);
+  assert.equal(state.splashes, 0);
+});
+
+test('stir score counts only time spent on pace', () => {
+  const half = (t) => ({ stir: 1, pace: Math.floor(t / 2) % 2 ? 1 : 0 });
+  const { state } = run(createCook(), half, (s) => s.browning >= 0.4);
+  const score = stirScore(state);
+  assert.ok(score > 40 && score < 60, `stir score ${score}`);
+});
