@@ -44,13 +44,17 @@ const renderer = createPotRenderer(els.canvas);
 const sound = createSound();
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const KEYBOARD_SPIN = 6; // rad/s swirl when stirring with the S key
+const KEY_SPIN = 1.6; // rad/s of swirl per unit of keyboard stir speed
 const SWIRL_FOLLOW = 0.55; // the roux turns a bit slower than the spoon
 const RESULT_DELAY = 450; // ms between the pot settling and the result sheet
 const COUNT_STEP = 0.8; // seconds per beat of the 3…2…1 countdown
 const COUNT_WORDS = ['3', '2', '1', 'Fire!'];
 const COUNT_LEAD = 0.45; // seconds before "3" so the title or result sheet can clear first
-const KEY_SPEED_STEP = 0.8; // pot radii per second per ↑/↓ press
+// Keyboard stirring is a rhythm: each tap of S is a stroke, and tapping faster stirs faster.
+const TAP_TO_SPEED = 1.4; // pot radii per second of stir speed per tap per second
+const TAP_WINDOW = 1.5; // seconds of recent taps used to judge the rhythm
+const TAP_TIMEOUT = 1.0; // seconds without a tap before the spoon stops
+const TAP_SMOOTHING = 0.15; // seconds; keeps the needle steady between taps
 
 function deviceStorage() {
   try {
@@ -68,8 +72,8 @@ let game = null; // { seed, menu, index, results }
 let round = null; // one dish in progress
 let hasStirred = false;
 let keyStirring = false;
-const KEY_START_SPEED = 3.8; // S-key stir speed at the start of each round: about one easy circle a second
-let keySpeed = KEY_START_SPEED;
+let keyTaps = []; // recent S taps, in seconds
+let keySpeed = 0;
 let lastFrame = null;
 
 // Browsers refuse vibration until the page has had a real tap.
@@ -110,7 +114,6 @@ function startDish() {
     pointerId: null,
   };
   renderer.reset();
-  keySpeed = KEY_START_SPEED;
   els.progress.textContent = `Round ${game.index + 1} of ${game.menu.length}`;
   els.chip.style.background = rouxColor(dish.target);
   els.dish.textContent = dish.dish;
@@ -432,8 +435,9 @@ function frame(ms) {
 
   if (round) {
     round.stir = stirTick(round.stir, now);
+    updateKeyStir(now, dt);
     const stirLevel = keyStirring ? 1 : round.stir.activity;
-    const spin = keyStirring ? KEYBOARD_SPIN : round.stir.spin;
+    const spin = keyStirring ? keySpeed * KEY_SPIN : round.stir.spin;
     round.swirl += spin * SWIRL_FOLLOW * dt;
     if (keyStirring && round.pointerId === null) {
       const { cx, cy, R } = renderer.geometry();
@@ -534,22 +538,29 @@ els.canvas.addEventListener('lostpointercapture', endStir);
 
 window.addEventListener('keydown', (e) => {
   if ((e.key === 's' || e.key === 'S') && !e.repeat && round) {
-    keyStirring = true;
+    keyTaps.push(e.timeStamp / 1000);
     hasStirred = true;
-  } else if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && round) {
-    e.preventDefault();
-    const step = e.key === 'ArrowUp' ? KEY_SPEED_STEP : -KEY_SPEED_STEP;
-    keySpeed = Math.max(KEY_SPEED_STEP, Math.min(METER_MAX, keySpeed + step));
   }
 });
-function endKeyStir() {
-  keyStirring = false;
-  if (round && round.pointerId === null) round.spoon = null;
+
+// Stir speed from the tap rhythm. A pause stretches the interval, so the needle sinks as you slow down.
+function updateKeyStir(now, dt) {
+  keyTaps = keyTaps.filter((t) => now - t < TAP_WINDOW);
+  const last = keyTaps[keyTaps.length - 1];
+  let target = 0;
+  if (keyTaps.length >= 2 && now - last < TAP_TIMEOUT) {
+    const interval = Math.max((last - keyTaps[0]) / (keyTaps.length - 1), now - last);
+    target = Math.min(METER_MAX, TAP_TO_SPEED / interval);
+  }
+  keySpeed = target + (keySpeed - target) * Math.exp(-dt / TAP_SMOOTHING);
+  const wasStirring = keyStirring;
+  keyStirring = target > 0;
+  if (wasStirring && !keyStirring && round.pointerId === null) round.spoon = null;
 }
-window.addEventListener('keyup', (e) => {
-  if (e.key === 's' || e.key === 'S') endKeyStir();
+
+window.addEventListener('blur', () => {
+  keyTaps = [];
 });
-window.addEventListener('blur', endKeyStir);
 
 
 els.action.addEventListener('click', onAction);

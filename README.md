@@ -74,4 +74,4 @@ Almost all of the feel lives in the constants at the top of `src/cook.js`
 the score curve is). The cook tests pin the pacing to ranges, so if you retune,
 `npm test` tells you what moved.
 
-On a keyboard, hold **S** to stir; **↑** and **↓** change your stir speed.
+On a keyboard, tap **S** to stir; tap faster to stir faster.
