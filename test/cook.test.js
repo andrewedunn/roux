@@ -175,13 +175,13 @@ test('stirring well below the meter lets the bottom catch', () => {
 });
 
 test('a little under the band is forgiven', () => {
-  const { state } = run(createCook(), { stir: 1, pace: -0.3 }, (s) => s.browning >= 0.5);
+  const { state } = run(createCook(), { stir: 1, pace: -0.15 }, (s) => s.browning >= 0.5);
   assert.equal(Math.floor(state.specks), 0);
 });
 
-test('stirring too fast splashes roux out of the pot, a bit over one a second', () => {
+test('stirring too fast splashes roux out of the pot, about two a second', () => {
   const { state, t } = run(createCook(), { stir: 1, pace: 1 }, (s, time) => time >= 5);
-  assert.ok(state.splashes > 5 && state.splashes < 8, `splashes ${state.splashes} in ${t}s`);
+  assert.ok(state.splashes > 8 && state.splashes < 12, `splashes ${state.splashes} in ${t}s`);
   assert.equal(Math.floor(state.specks), 0);
 });
 
@@ -195,4 +195,9 @@ test('stir score counts only time spent on pace', () => {
   const { state } = run(createCook(), half, (s) => s.browning >= 0.4);
   const score = stirScore(state);
   assert.ok(score > 40 && score < 60, `stir score ${score}`);
+});
+
+test('stirring well under the band flecks within a few seconds', () => {
+  const { t } = run(createCook(), { stir: 1, pace: -0.8 }, (s) => s.specks >= 1);
+  assert.ok(t < 6, `first fleck after ${t.toFixed(1)}s`);
 });

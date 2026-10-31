@@ -16,7 +16,9 @@ doesn't stick, and drop the trinity to stop the cooking.
    Keep your stir speed (the needle) in it. The zone holds for a few seconds,
    then glides somewhere new; each round's zone is narrower and moves more
    often (`src/pace.js`). Too slow stirs less well, so the bottom catches and
-   flecks; too fast slops roux onto the stovetop (−2 per splash). The zone is
+   flecks; too fast slops roux onto the stovetop (−3 per splash, about two a
+   second when way too fast). Way off the zone, a big FASTER! / SLOWER! shakes
+   over the pot and the meter flashes. The zone is
    seeded from the menu, so a shared link gets the same moves.
 5. There is one steady burner. (Heat levels were cut: with no reward for speed,
    Low was always the safer pick, so it wasn't a real choice.)

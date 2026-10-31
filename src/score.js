@@ -8,7 +8,7 @@ import { rouxColor } from './roux.js';
 const K = 0.1;
 const SPOT_ON_DELTA = 0.015;
 const POINTS_PER_SPECK = 3;
-const POINTS_PER_SPLASH = 2;
+const POINTS_PER_SPLASH = 3;
 
 const VERDICTS = [
   { min: 95, text: 'Ça c’est bon.' },
