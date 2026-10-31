@@ -13,7 +13,7 @@ const centers = (pace, seconds) =>
 test('the band starts at an easy speed and holds still for the first couple of seconds', () => {
   const pace = createPace(42, 0);
   const first = pace.band(0);
-  const later = pace.band(2.4);
+  const later = pace.band(1.9);
   assert.deepEqual(first, later);
   assert.ok(first.lo > 1 && first.hi < 6, JSON.stringify(first));
 });

@@ -22,8 +22,8 @@ const SETTLED_RATE = 0.004;
 const MAX_SUBSTEP = 1 / 120;
 const REAL_STIR = 0.35; // stir activity that counts as actually stirring
 const STIR_GRACE = 0.3; // seconds after a stir that still count as "kept it moving"
-// Stirring too fast for the meter slops roux over the side: about one splash a second when way too fast.
-const SPLASH_RATE = 1.1;
+// Stirring too fast for the meter slops roux over the side: over one splash a second when way too fast.
+const SPLASH_RATE = 1.3;
 const ON_PACE = 0.35; // |pace| under this still counts as keeping the meter's pace
 
 const clamp01 = (v) => Math.max(0, Math.min(1, v));

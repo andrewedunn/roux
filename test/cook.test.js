@@ -179,9 +179,9 @@ test('a little under the band is forgiven', () => {
   assert.equal(Math.floor(state.specks), 0);
 });
 
-test('stirring too fast splashes roux out of the pot, about one a second', () => {
+test('stirring too fast splashes roux out of the pot, a bit over one a second', () => {
   const { state, t } = run(createCook(), { stir: 1, pace: 1 }, (s, time) => time >= 5);
-  assert.ok(state.splashes > 4 && state.splashes < 7, `splashes ${state.splashes} in ${t}s`);
+  assert.ok(state.splashes > 5 && state.splashes < 8, `splashes ${state.splashes} in ${t}s`);
   assert.equal(Math.floor(state.specks), 0);
 });
 
