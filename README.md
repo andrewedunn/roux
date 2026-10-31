@@ -11,7 +11,7 @@ Mobile-first browser game at **https://roux.dunn.us**. No build step, no depende
 - Each round starts with a 3…2…1…Fire! countdown that lights the burner.
 - A stir-speed meter shows a green zone that holds, then slides somewhere new
   during the cook (narrower and fidgetier each round). Too slow and the bottom
-  catches (flecks, −3 each); too fast and roux splashes on the stove (−2 each).
+  catches (flecks, −3 each); too fast and roux splashes on the stove (−3 each). Way off, a big FASTER! or SLOWER! shows over the pot.
 - Every dish gets a roux score (how close the color is) and a stir score (how
   much of the cook you kept it moving at the meter's pace).
 - **Share** posts a text scorecard with a link that opens the same three dishes.

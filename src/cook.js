@@ -22,8 +22,12 @@ const SETTLED_RATE = 0.004;
 const MAX_SUBSTEP = 1 / 120;
 const REAL_STIR = 0.35; // stir activity that counts as actually stirring
 const STIR_GRACE = 0.3; // seconds after a stir that still count as "kept it moving"
-// Stirring too fast for the meter slops roux over the side: over one splash a second when way too fast.
-const SPLASH_RATE = 1.3;
+// Stirring too fast for the meter slops roux over the side: two splashes a second when way too fast.
+const SPLASH_RATE = 2;
+// Stirring too slow for the meter barely moves the bottom: past this much "too slow" it's as good as stopped,
+// and the bottom starts catching right away.
+const SLOW_STALL = 0.6;
+const SLOW_CATCH = 0.5;
 const ON_PACE = 0.35; // |pace| under this still counts as keeping the meter's pace
 
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
@@ -71,7 +75,8 @@ function substep(s, rawStir, pace, h) {
   let stick = s.stick;
   let specks = s.specks;
   let splashes = s.splashes;
-  const stir = rawStir * (1 - Math.max(0, -pace));
+  const slow = Math.max(0, -pace);
+  const stir = rawStir * Math.max(0, 1 - slow / SLOW_STALL);
   const stirring = stir >= REAL_STIR;
   const stirredFor = !cooling && stirring ? s.stirredFor + h : s.stirredFor;
   // Stir consistency is only measured while the burner is on, not while the trinity cools it.
@@ -83,6 +88,7 @@ function substep(s, rawStir, pace, h) {
     stick = Math.max(0, stick - STICK_CLEAR * h);
   } else {
     stick += h * STICK_RISE * temp ** 1.5 * (0.35 + browning) * (1 - stir);
+    if (rawStir >= REAL_STIR) stick += h * SLOW_CATCH * slow;
     stick = clamp01(stick - h * STICK_CLEAR * stir);
     if (stick > SPECK_THRESHOLD) {
       specks += h * SPECK_RATE * temp * Math.min(1, (stick - SPECK_THRESHOLD) / SPECK_RAMP);

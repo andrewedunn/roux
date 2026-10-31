@@ -31,6 +31,7 @@ const els = {
   stove: $('stove'),
   canvas: $('pot'),
   countdown: $('countdown'),
+  nudge: $('nudge'),
   meter: $('meter'),
   meterBand: $('meter-band'),
   meterNeedle: $('meter-needle'),
@@ -373,7 +374,7 @@ function updateCaption(pace, stirLevel) {
     text = hasStirred ? 'Burner’s coming on…' : 'Try stirring in circles.';
   } else if (phase === 'cooking') {
     if (cook.stick > 0.3) {
-      text = 'It’s catching. Stir!';
+      text = pace < -0.3 && stirLevel > 0.2 ? 'Faster! It’s catching.' : 'It’s catching. Stir!';
       tone = 'alarm';
     } else if (pace > 0.3) {
       text = 'Easy! It’s splashing.';
@@ -407,6 +408,26 @@ function updateCaption(pace, stirLevel) {
 // --- Speed meter ------------------------------------------------------------
 
 let meterShown = '';
+let nudgeShown = '';
+
+// Way off the zone gets a big FASTER / SLOWER over the pot. It comes on past NUDGE_ON and goes off under
+// NUDGE_OFF, so it doesn't flicker at the edge.
+const NUDGE_ON = 0.4;
+const NUDGE_OFF = 0.15;
+
+function updateNudge(pace, stirLevel) {
+  let next = round.phase === 'cooking' && stirLevel > 0.2 ? nudgeShown : '';
+  if (next === '' && round.phase === 'cooking' && stirLevel > 0.2) {
+    if (pace >= NUDGE_ON) next = 'slower';
+    else if (pace <= -NUDGE_ON) next = 'faster';
+  } else if (next === 'slower' && pace < NUDGE_OFF) next = '';
+  else if (next === 'faster' && pace > -NUDGE_OFF) next = '';
+  if (next === nudgeShown) return;
+  nudgeShown = next;
+  els.nudge.textContent = next === 'faster' ? 'Faster!' : next === 'slower' ? 'Slower!' : '';
+  els.nudge.className = next ? `nudge show ${next}` : 'nudge';
+  els.meter.toggleAttribute('data-way-off', next !== '');
+}
 
 function updateMeter(speed, band, pace) {
   const { phase, cook } = round;
@@ -488,6 +509,7 @@ function frame(ms) {
       dt,
     );
     updateMeter(speed, band, pace);
+    updateNudge(pace, stirLevel);
     updateCaption(pace, stirLevel);
   }
   requestAnimationFrame(frame);

@@ -6,17 +6,17 @@ const LOW = 1.6; // the band's center never goes slower than this...
 const HIGH = 7.2; // ...or faster than this
 const FIRST_CENTER = 3.8; // about one easy circle a second
 const SETTLE = 2; // seconds the band sits still at the start so you can find it
-const SOFT = 0.75; // radii/s past the band's edge until it counts as fully too slow or too fast
+const SOFT = 0.7; // radii/s past the band's edge until it counts as fully too slow or too fast
 const SCHEDULE_SECONDS = 90;
 
 // The band never really stops: it drifts slowly back and forth, pauses now and then, and every so often
 // lurches somewhere new. Later rounds are narrower, lurch more often, and drift faster.
 const ROUNDS = [
-  { width: 2.1, lurch: 0.28, drift: [2.0, 3.4] },
-  { width: 1.8, lurch: 0.36, drift: [1.7, 2.9] },
-  { width: 1.5, lurch: 0.45, drift: [1.4, 2.4] },
+  { width: 2.5, lurch: 0.22, drift: [2.3, 3.8] },
+  { width: 2.2, lurch: 0.3, drift: [2.0, 3.3] },
+  { width: 1.9, lurch: 0.38, drift: [1.7, 2.8] },
 ];
-const DRIFT_REACH = [0.8, 2.4]; // how far a slow drift travels, radii/s
+const DRIFT_REACH = [0.7, 2.2]; // how far a slow drift travels, radii/s
 const LURCH_REACH = [2.0, 3.6]; // how far a lurch travels
 const LURCH_SECONDS = [0.55, 0.9];
 const PAUSE_CHANCE = 0.2;
