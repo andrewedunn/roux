@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://roux.dunn.us/sitemap.xml
