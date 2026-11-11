@@ -956,6 +956,17 @@ button:focus-visible {
   }
 }
 
+.made-by {
+  margin: 14px 0 0;
+  text-align: center;
+  font-size: var(--text-label);
+  color: var(--ink-2);
+}
+
+.made-by a {
+  color: inherit;
+}
+
 @keyframes rise {
   from {
     transform: translateY(100%);
